@@ -1,0 +1,414 @@
+---
+title: "Machine Learning Project"
+format: html
+editor: visual
+self-contained: true
+toc: true
+toc-depth: 3
+toc-location: left
+---
+
+```{r setup, include=FALSE}
+install.packages("here")
+install.packages("ROCR")
+install.packages("DT")
+install.packages("gt")
+install.packages("expss")
+install.packages("cowplot")
+install.packages("vcd")
+install.packages("grid")
+install.packages(c("leaflet","leaflet.extras", "dplyr"))
+install.packages("sf", dependencies=TRUE, repos='http://cran.rstudio.com/')
+install.packages("leaflet")
+install.packages("kableExtra")
+library(dplyr)
+library(haven)
+library(tidyr)
+library(reshape2)
+library(readxl)
+library(here)
+library(tidyverse)
+library(knitr)
+library(corrplot)
+library(lmtest)  
+library("pROC")  
+library(ROCR)  
+library(lubridate)  
+library(pscl)  
+library(carData)  
+library(car)
+library(pROC)
+library(ROCR)
+library(DT)
+library(ggplot2)
+library(ggpubr)
+library(ggridges)
+library(gridExtra)
+library(expss)
+library(cowplot)
+library(vcd)
+library(sf)
+library(leaflet)
+library(leaflet.extras)
+library(kableExtra)
+library(gridExtra)
+library(visdat)
+```
+
+# Poverty Analysis in The United States 2024
+
+**Machine Learning in Business Analytics - Spring 2024**
+
+**Marcela Choque Quispe, Reisa Reci, and Mariel Gandarillas Calderon**
+
+**2024-06-09**
+
+*This project was written by us and in our own words, except for quotations from published and unpublished sources, which are clearly indicated and acknowledged as such. We are conscious that the incorporation of material from other works or a paraphrase of such material without acknowledgement will be treated as plagiarism, subject to the custom and usage of the subject, according to the University Regulations. The source of any picture, map or other illustration is also indicated, as is the source, published or unpublished, of any material not resulting from our own research.*
+
+## 1. Abstract
+
+This research project delves into the socioeconomic dimensions of poverty in the United States, leveraging the comprehensive dataset provided by the Household Survey USA 2024. The investigation centers on a meticulous examination of various demographic and socioeconomic variables, including race, age, gender, geographic location, educational attainment, marital status, and income, to delineate the contours of poverty across the nation. By aligning the income metrics with the poverty threshold defined by the United Nations, this study categorizes individuals into "poor" and "non-poor" groups, facilitating a nuanced analysis of poverty's underpinnings.
+
+Employing advanced machine learning methodologies, the project aims to unearth the pivotal factors that significantly predispose individuals to poverty, thereby shedding light on the intricate web of influences that perpetuate economic disparity. The analytical journey encompasses preprocessing the data to ensure robustness, employing exploratory data analysis to unravel preliminary insights, and systematically applying feature selection techniques to distill the variables of highest relevance.
+
+By crafting predictive models through a rigorous process of training, testing, and validation, this investigation aspires to provide a data-driven foundation for understanding poverty. The ultimate objective is to cultivate a rich body of knowledge that can underpin policy initiatives and intervention strategies. Through these insights, the study endeavors to contribute to the broader dialogue on poverty reduction, aiming to catalyze informed action that can significantly alter the socioeconomic landscape and improve the livelihoods of those at the margins of society in the United States.
+
+## 2. Introduction
+
+In an era where socio-economic disparities are increasingly under the spotlight, understanding the dynamics of poverty within the United States is more pertinent than ever. This report harnesses the data from the Household Survey USA 2024, a comprehensive dataset provided by the United States Census Bureau, to explore the multifaceted nature of poverty.
+
+### 2.1 Context and Background
+
+With the latest data sourced from [the United States Census Bureau](https://www.census.gov/programs-surveys/household-pulse-survey/data/datasets.2024.html#list-tab-1264157801), we delve into the current state of American households. By establishing a poverty threshold in accordance with the United Nations' guidelines, we aim to classify individuals as "poor" or "non-poor," thereby setting the stage for an in-depth analysis of poverty-related factors.
+
+### 2.2 Motivation
+
+As emerging data analysts, we are compelled by the capacity of data to unfold narratives of economic well-being and hardship. Through this project, we seek to quantify the correlates of poverty and, in doing so, contribute to the broader discourse on socio-economic health in the U.S.
+
+### 2.3 Aim of the investigation
+
+Our primary objective is to discern the variables that most significantly influence the probability of an individual falling below the poverty line. The investigation will pivot on the following points of inquiry:
+
+-   Identifying the demographic and socio-economic variables that heighten the risk of poverty.
+
+-   Understanding the interaction between these variables and their collective impact on economic status.
+
+### 2.4. Method & General Outlook
+
+The methodology will involve rigorous data wrangling to prepare the dataset for analysis, followed by statistical techniques to evaluate the relationships between our variables of interest and poverty status.
+
+The report will progress through the following structure:
+
+-   **Section 2**: Articulates the contextual background and motivations behind the study.
+
+-   **Section 3**: Provides an overview of the variables, describing each in detail and outlining the data wrangling process.
+
+-   **Section 4**: Explores the analytical methods employed, drawing on relevant literature to situate our approach within the broader field of socio-economic analysis.
+
+-   **Section 5**: Presents the findings of our study, addressing the initial research objectives and offering interpretations of the results.
+
+-   **Section 6**: Discusses the implications of our findings from a socio-economic perspective, considering the potential for policy intervention and support.
+
+-   **Section 7**: Lists all references and resources utilized throughout the research process.
+
+## 3. Data description
+
+The core of our analysis is the Household Survey USA 2024 dataset. We will enrich this dataset by creating a new feature to categorize individuals based on their economic status, using the UN's poverty line as our benchmark. Our variables of interest are demographically and socio-economically diverse, encompassing race, age, gender, geographic location, education, marital status, and income.
+
+### 3.1. Variable Description and Data-Set Preparation
+
+The dataset utilized in this project, titled "Household Survey USA 2024," originates from the official website of the United States Census Bureau. It constitutes a comprehensive compilation of data collected through household surveys conducted across diverse regions of the United States. This dataset encapsulates an extensive array of demographic attributes, socio-economic indicators, and other pertinent factors for each surveyed individual and household.
+
+```{r}
+setwd("~/Maestria/2. Second Semester/Machine Learning/Project")
+data_set<-read.csv(here::here("Project/data_set.csv"))
+
+prepared_dataset <- data_set %>%
+  select(
+    RecordID = SCRAM,
+    HispanicOrigin = RHISPANIC, 
+    Race = RRACE,  # 
+    BirthYear = TBIRTH_YEAR,
+    Gender = EGENID_BIRTH, 
+    Location = REGION,  
+    Education = EEDUC,  
+    MaritalStatus = MS,  
+    Income = INCOME  
+  ) %>%
+  mutate(
+    Age = year(Sys.Date()) - BirthYear
+  ) %>%
+  select(-BirthYear)
+
+```
+
+```{r}
+variable_types <- as.data.frame(sapply(prepared_dataset, class))
+variable_types <- cbind(names(prepared_dataset), variable_types)
+colnames(variable_types) <- c("Name", "Type")
+rownames(variable_types) <- NULL
+
+variable_types$Explanation <- c(
+  "Identifier for each record",
+  "Hispanic origin indicator",
+  "Race code",
+  "Gender code",
+  "Location code",
+  "Education level code",
+  "Marital status code",
+  "Income level",
+  "Age"
+)
+
+
+variable_types
+```
+
+### 3.3 Data Cleaning
+
+type
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+
+
+vis_dat(prepared_dataset, warn_large_data = FALSE) + 
+  scale_fill_brewer(palette="Paired")
+
+
+```
+
+Na count
+
+```{r}
+prepared_dataset_modified <- prepared_dataset %>%
+  mutate(across(everything(), ~ifelse(. == -99, NA, .)))
+
+# Count NA values, including those originally set as -99
+na_counts <- colSums(is.na(prepared_dataset_modified))
+
+na_percentages <- (na_counts / nrow(prepared_dataset_modified)) * 100
+
+# Create a data frame to display the counts
+na_df <- data.frame(
+  Variable = names(na_counts), 
+  NAs = na_counts, 
+  Percentage = sprintf("%.2f%%", na_percentages)  # formatted as percentage with 2 decimal places
+)
+
+datatable(na_df, 
+          options = list(
+            dom = 'lBfrtip', 
+            pageLength = 15,   
+            lengthMenu = c(10, 15, 20), 
+            paging = TRUE,
+            searching = TRUE,
+            ordering = TRUE
+          ))
+```
+
+add description. here -99 also indicates NA
+
+### 3.3 Data modifications
+
+Add description
+
+```{r}
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/2), 2), mar = c(4, 4, 2, 1))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(1, 2), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(1, 2,3,4), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5, 3.5,4.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+changes (create a summary of this like a table with what 1 used to mean and now what does that mean):
+
+-   No =0 & Yes=1
+
+    -   RHispanic: NoOld1 =0 & YesOld2=1
+
+    -   gender: MaleOld1=0 & FemaleOld2=1 & TrasgenderOld3=2
+
+    -   Race: WhiteOld1=0 & BlackOld2=1 & AsianOld3 = 3 & Other=4
+
+    -   Location: NothwestOld1=0 , SouthOld2=1, MidwestOld3=2, West=4
+
+    -   Education: old 1,2=0, old3=1, old4=2, old5=3, old6=4, old7=5
+
+    -   marital status: old1=0married, old2=1 widow, old3 =2divorced, old4= 3separated, old5=4 single
+
+-   NA treatment:
+
+    -   Marital status: take out -99. Represent 0.6%
+
+    -   income: take out -99 and -88. Represent 1.9%, -88 represents 15%
+
+```{r}
+prepared_dataset<-prepared_dataset%>%
+  filter(
+    MaritalStatus != -99,  # Exclude -99 from MaritalStatus
+    Income != -99,  # Exclude -99 from Income
+    Income != -88  # Exclude -88 from Income
+  ) %>%
+   mutate(
+    HispanicOrigin = ifelse(HispanicOrigin == 1, 0, ifelse(HispanicOrigin == 2, 1, HispanicOrigin)),  # Recode HispanicOrigin
+    Gender = case_when(
+      Gender == 1 ~ 0, 
+      Gender == 2 ~ 1,
+      Gender == 3 ~ 2,
+      TRUE ~ Gender
+    ),  # Recode Gender
+    Race = case_when(
+      Race == 1 ~ 0,
+      Race == 2 ~ 1,
+      Race %in% c(3, 4) ~ 3,
+      TRUE ~ Race
+    ),  # Recode Race
+    Location = case_when(
+      Location == 1 ~ 0,
+      Location == 2 ~ 1,
+      Location == 3 ~ 2,
+      Location == 4 ~ 3,
+      TRUE ~ Location
+    ),  # Recode Location
+    Education = case_when(
+      Education %in% c(1, 2) ~ 0,
+      Education == 3 ~ 1,
+      Education == 4 ~ 2,
+      Education == 5 ~ 3,
+      Education == 6 ~ 4,
+      Education == 7 ~ 5,
+      TRUE ~ Education
+    ),  # Recode Education
+    MaritalStatus = case_when(
+      MaritalStatus == 1 ~ 0,
+      MaritalStatus == 2 ~ 1,
+      MaritalStatus == 3 ~ 2,
+      MaritalStatus == 4 ~ 3,
+      MaritalStatus == 5 ~ 4,
+      TRUE ~ MaritalStatus
+    )  # Recode MaritalStatus
+  )
+head(prepared_dataset)
+```
+
+Add a summary of the changes
+
+The code of changes done:
+
+```{r}
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/2), 2), mar = c(4, 4, 2, 1))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(0, 1), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(0,1, 2,3), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5, 2.5, 3.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+Analysis of outliers
+
+the code of outliers:
+
+```{r}
+identify_outliers <- function(x) {
+  q25 <- quantile(x, 0.25)
+  q75 <- quantile(x, 0.75)
+  iqr <- q75 - q25
+  lower_bound <- q25 - 1.5 * iqr
+  upper_bound <- q75 + 1.5 * iqr
+  
+  return(x < lower_bound | x > upper_bound)
+}
+
+# Apply function to identify outliers in the Age column
+outliers <- identify_outliers(prepared_dataset$Age)
+
+# View outliers
+outliers_data <- prepared_dataset[outliers, ]
+boxplot(prepared_dataset$Age)
+```
+
+There arent outliers
+
+Test of normality
+
+code:
+
+```{r}
+set.seed(123)  
+sampled_ages <- sample(prepared_dataset$Age, min(5000, length(prepared_dataset$Age)))
+shapiro_test <- shapiro.test(sampled_ages)
+
+# Print the results of the Shapiro-Wilk test
+print(shapiro_test)
+
+
+```
+
+A p value lower than 5% suggests a not normal distribution then we apply log to the numeric variables age
+
+```{r}
+prepared_dataset <- prepared_dataset %>%
+  mutate(Log_Age = ifelse(Age > 0, log(Age), NA))  # Assign NA where Age is zero or negative to avoid errors
+
+# Check the transformed distribution of Log_Age
+ggplot(prepared_dataset, aes(x = Log_Age)) +
+  geom_histogram(binwidth = 0.1, fill = "blue", alpha = 0.7) +
+  ggtitle("Log Transformed Distribution of Age") +
+  xlab("Log(Age)") +
+  ylab("Count")
+```
+
+### 3.4 Exploratory data analysis
+
+## 4.  Supervised Methods
+
+### 4.1 Logistic Regression
+
+### 4.2 Random Forest
+
+### 4.3 Super Vector Machine 
+
+```{r}
+y
+```
+
+## 5. Unsupervised Methods
+
+## 6. Results
+
+## 7. Recommendations and discussion
+
+##  8. References
