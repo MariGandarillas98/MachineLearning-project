@@ -1,0 +1,815 @@
+---
+title: "Machine Learning Project"
+format: html
+editor: visual
+self-contained: true
+toc: true
+toc-depth: 3
+toc-location: left
+---
+
+```{r setup, include=FALSE}
+install.packages("here")
+install.packages("ROCR")
+install.packages("DT")
+install.packages("gt")
+install.packages("expss")
+install.packages("cowplot")
+install.packages("vcd")
+install.packages("grid")
+install.packages(c("leaflet","leaflet.extras", "dplyr"))
+install.packages("sf", dependencies=TRUE, repos='http://cran.rstudio.com/')
+install.packages("leaflet")
+install.packages("kableExtra")
+library(dplyr)
+library(haven)
+library(tidyr)
+library(reshape2)
+library(readxl)
+library(here)
+library(tidyverse)
+library(knitr)
+library(corrplot)
+library(lmtest)  
+library("pROC")  
+library(ROCR)  
+library(lubridate)  
+library(pscl)  
+library(carData)  
+library(car)
+library(pROC)
+library(ROCR)
+library(ggplot2)
+library(ggpubr)
+library(ggridges)
+library(gridExtra)
+library(cowplot)
+library(vcd)
+library(sf)
+library(kableExtra)
+library(gridExtra)
+library(visdat)
+library(liver)
+library(rpart)
+library(rpart.plot)
+install.packages("htmltools")
+library(ranger)
+```
+
+# Poverty Analysis in The United States 2024
+
+**Machine Learning in Business Analytics - Spring 2024**
+
+**Marcela Choque Quispe, Reisa Reci, and Mariel Gandarillas Calderon**
+
+**2024-06-09**
+
+*This project was written by us and in our own words, except for quotations from published and unpublished sources, which are clearly indicated and acknowledged as such. We are conscious that the incorporation of material from other works or a paraphrase of such material without acknowledgement will be treated as plagiarism, subject to the custom and usage of the subject, according to the University Regulations. The source of any picture, map or other illustration is also indicated, as is the source, published or unpublished, of any material not resulting from our own research.*
+
+## 1. Abstract
+
+This research project delves into the socioeconomic dimensions of poverty in the United States, leveraging the comprehensive dataset provided by the Household Survey USA 2024. The investigation centers on a meticulous examination of various demographic and socioeconomic variables, including race, age, gender, geographic location, educational attainment, marital status, and income, to delineate the contours of poverty across the nation. By aligning the income metrics with the poverty threshold defined by the United Nations, this study categorizes individuals into "poor" and "non-poor" groups, facilitating a nuanced analysis of poverty's underpinnings.
+
+Employing advanced machine learning methodologies, the project aims to unearth the pivotal factors that significantly predispose individuals to poverty, thereby shedding light on the intricate web of influences that perpetuate economic disparity. The analytical journey encompasses preprocessing the data to ensure robustness, employing exploratory data analysis to unravel preliminary insights, and systematically applying feature selection techniques to distill the variables of highest relevance.
+
+By crafting predictive models through a rigorous process of training, testing, and validation, this investigation aspires to provide a data-driven foundation for understanding poverty. The ultimate objective is to cultivate a rich body of knowledge that can underpin policy initiatives and intervention strategies. Through these insights, the study endeavors to contribute to the broader dialogue on poverty reduction, aiming to catalyze informed action that can significantly alter the socioeconomic landscape and improve the livelihoods of those at the margins of society in the United States.
+
+## 2. Introduction
+
+In an era where socio-economic disparities are increasingly under the spotlight, understanding the dynamics of poverty within the United States is more pertinent than ever. This report harnesses the data from the Household Survey USA 2024, a comprehensive dataset provided by the United States Census Bureau, to explore the multifaceted nature of poverty.
+
+### 2.1 Context and Background
+
+With the latest data sourced from [the United States Census Bureau](https://www.census.gov/programs-surveys/household-pulse-survey/data/datasets.2024.html#list-tab-1264157801), we delve into the current state of American households. By establishing a poverty threshold in accordance with the United Nations' guidelines, we aim to classify individuals as "poor" or "non-poor," thereby setting the stage for an in-depth analysis of poverty-related factors.
+
+### 2.2 Motivation
+
+As emerging data analysts, we are compelled by the capacity of data to unfold narratives of economic well-being and hardship. Through this project, we seek to quantify the correlates of poverty and, in doing so, contribute to the broader discourse on socio-economic health in the U.S.
+
+### 2.3 Aim of the Investigation
+
+Our primary objective is to discern the variables that most significantly influence the probability of an individual falling below the poverty line. The investigation will pivot on the following points of inquiry:
+
+-   Identifying the demographic and socio-economic variables that heighten the risk of poverty.
+
+-   Understanding the interaction between these variables and their collective impact on economic status.
+
+### 2.4. Method & General Outlook
+
+The methodology will involve rigorous data wrangling to prepare the dataset for analysis, followed by statistical techniques to evaluate the relationships between our variables of interest and poverty status.
+
+The report will progress through the following structure:
+
+-   **Section 2**: Articulates the contextual background and motivations behind the study.
+
+-   **Section 3**: Provides an overview of the variables, describing each in detail and outlining the data wrangling process.
+
+-   **Section 4**: Explores the analytical methods employed, drawing on relevant literature to situate our approach within the broader field of socio-economic analysis.
+
+-   **Section 5**: Presents the findings of our study, addressing the initial research objectives and offering interpretations of the results.
+
+-   **Section 6**: Discusses the implications of our findings from a socio-economic perspective, considering the potential for policy intervention and support.
+
+-   **Section 7**: Lists all references and resources utilized throughout the research process.
+
+## 3. Data Description
+
+The core of our analysis is the Household Survey USA 2024 dataset. We will enrich this dataset by creating a new feature to categorize individuals based on their economic status, using the UN's poverty line as our benchmark. Our variables of interest are demographically and socio-economically diverse, encompassing race, age, gender, geographic location, education, marital status, and income.
+
+### 3.1. Variable Description and Data-Set Preparation
+
+The dataset utilized in this project, is titled "Household Survey USA 2024," originates from the official website of the United States Census Bureau. It constitutes a compilation of data collected through household surveys conducted across diverse regions of the United States. This dataset has the following variables:
+
+```{r}
+
+setwd("C:/Users/Hp/OneDrive/Desktop/Machine Learning")
+data_set <- read.csv("data_set.csv")
+
+prepared_dataset <- data_set %>%
+  select(
+    RecordID = SCRAM,
+    HispanicOrigin = RHISPANIC, 
+    Race = RRACE,  # 
+    BirthYear = TBIRTH_YEAR,
+    Gender = EGENID_BIRTH, 
+    Location = REGION,  
+    Education = EEDUC,  
+    MaritalStatus = MS,  
+    Income = INCOME,
+    HouseholdSize = THHLD_NUMPER
+  ) %>%
+  mutate(
+    Age = year(Sys.Date()) - BirthYear
+  ) %>%
+  select(-BirthYear)
+
+```
+
+```{r}
+
+variable_types <- as.data.frame(sapply(prepared_dataset, class))
+variable_types <- cbind(Name = names(prepared_dataset), variable_types)
+colnames(variable_types) <- c("Name", "Type")
+rownames(variable_types) <- NULL
+
+explanations <- c(
+  "Identifier for each observation.",
+  "Hispanic origin indicator where 1 means No, and 2 Yes.",
+  "Race and ethnicity indicator,where 1 means White, 2 Black, 3 Asian, and 4 Other.",
+  "Current gender identity, where 1 is Male, 2 Female, 3 Trasgender, and 4 Other",
+  "Region code, where 1 means Northeast, 2 South, 3 Midwest, and 4 West.",
+  "Education attainment, where 1 is Less than High School, 2 Some High School, 3 High School graduate, 4 College in progress, 5 AA or AS degree, 6 Bachelor's degree, and 7 Master's degree.",
+  "Marital status, where 1 is Married, 2 Widowed, 3 Divorced, 4 Separated, and 5 Never married.",
+  "Ordinal variable representing the household income before taxes  per year level, where 1 is Less than $25k, 2 is $25k-$34,9k, 3 is $35k-$49,9k, 4 is $50k-$74,9k, 5 is $75k-$99,9k, 6 is $100k-$149,9k, 7 is $150k-$199,9k. and 8 is higher than $200k.",
+  "Total number of people in household. Numerical variable",
+  "Variable representing the age"
+)
+
+
+variable_types$Explanation <- explanations
+
+
+kable(variable_types)
+
+```
+
+In this step, we selected key variables like ID numbers, where people come from, their ethnicity, gender, education level, income, and age. The table gives a quick look at these details,including their names, data types, and brief explanations (prior the data transformation).
+
+### 3.3 Data Cleaning
+
+Upon visualizing the variable types, it's evident that the majority are integers, signifying categorical data, while only 'Age' stands out as numerical. Additionally, 'RecordID' is characterized as a character variable, serving as a unique identifier.
+
+```{r}
+
+
+vis_dat(prepared_dataset, warn_large_data = FALSE) + 
+  scale_fill_brewer(palette="Paired")
+
+
+```
+
+```{r}
+
+prepared_dataset_modified <- prepared_dataset %>%
+  mutate(across(everything(), ~ifelse(. == -99, NA, .)))
+
+# Count NA values, including those originally set as -99
+na_counts <- colSums(is.na(prepared_dataset_modified))
+
+na_percentages <- (na_counts / nrow(prepared_dataset_modified)) * 100
+
+# Create a data frame to display the counts
+na_df <- data.frame(
+  Variable = names(na_counts), 
+  NAs = na_counts, 
+  Percentage = sprintf("%.2f%%", na_percentages)  # formatted as percentage with 2 decimal places
+)
+
+datatable(na_df, 
+          options = list(
+            dom = 'lBfrtip', 
+            pageLength = 15,   
+            lengthMenu = c(10, 15, 20), 
+            paging = TRUE,
+            searching = TRUE,
+            ordering = TRUE
+          ))
+```
+
+This table presents the count and percentage of missing values (NA) for each variable in the dataset. Notably, 'MaritalStatus' and 'Income' show some missing data, with 'Income' having the highest percentage of missing values at 1.84%. Additionally, it's important to note that in this dataset, the value -99 and -88 are interpreted as NA.
+
+### 3.3 Data modifications
+
+Eight histograms displaying the distributions variables within a dataset.
+
+```{r}
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/3), 2), mar = c(6, 6, 3, 2))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(1, 2), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(1, 2,3,4), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5, 3.5,4.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+In general, the change will involve adding the category 0 to all variables. Additionally, as part of this adjustment, categories with minority distributions will be grouped together. For example, in the 'Education' variable, the 7 categories will be reduced to just 5
+
+#### Re-coding of Variables
+
+The categories for the following variables are as shown in the table below:
+
+```{r}
+variable_change <- cbind(c("RHispanic", "Gender", "Race", "Location", "Education", "Marital Status"), explanations)
+colnames(variable_change) <- c("Name", "New categories")
+rownames(variable_change) <- NULL
+
+explanations <- c(
+  "Where 0 means No, and 1 Yes.",
+  "Where 0 means Male, 1 Female, and 3 Others.",
+  "Where 0 means White, 1 Black, 2 Others.",
+  "Where 0 means Northwest, 1 South, 2 Midwest, 3 West.",
+  "Where 0 means No education, 1 High School graduate, 2 AA or AS degree, 3 Bachelor's degree, and 4 Master's degree.",
+  "where 0 is Married, 1 Widowed, 2 Divorced, 3 Separated, and 4 Never married."
+)
+
+
+
+kable(variable_change)
+```
+
+#### NA Treatment
+
+The graphs also illustrate how variables such as Marital Status and Income have a percentage of NAs. These will be removed as they do not represent significant proportions.
+
+| Variable       | Codes to Remove | Representation |
+|----------------|-----------------|----------------|
+| Marital Status | -99             | 0.6%           |
+| Income         | -99, -88        | 1.9%           |
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+prepared_dataset<-prepared_dataset%>%
+  filter(
+    MaritalStatus != -99,  # Exclude -99 from MaritalStatus
+    Income != -99,  # Exclude -99 from Income
+    Income != -88  # Exclude -88 from Income
+  ) %>%
+   mutate(
+    HispanicOrigin = ifelse(HispanicOrigin == 1, 0, ifelse(HispanicOrigin == 2, 1, HispanicOrigin)),  # Recode HispanicOrigin
+    Gender = case_when(
+      Gender == 1 ~ 0, 
+      Gender == 2 ~ 1,
+      Gender == 3 ~ 2,
+      TRUE ~ Gender
+    ),  # Recode Gender
+    Race = case_when(
+      Race == 1 ~ 0,
+      Race == 2 ~ 1,
+      Race %in% c(3, 4) ~ 2,
+      TRUE ~ Race
+    ),  # Recode Race
+    Location = case_when(
+      Location == 1 ~ 0,
+      Location == 2 ~ 1,
+      Location == 3 ~ 2,
+      Location == 4 ~ 3,
+      TRUE ~ Location
+    ),  # Recode Location
+    Education = case_when(
+      Education %in% c(1, 2) ~ 0,
+      Education == 3 ~ 1,
+      Education == 4 ~ 1,
+      Education == 5 ~ 2,
+      Education == 6 ~ 3,
+      Education == 7 ~ 4,
+      TRUE ~ Education
+    ),  # Recode Education
+    MaritalStatus = case_when(
+      MaritalStatus == 1 ~ 0,
+      MaritalStatus == 2 ~ 1,
+      MaritalStatus == 3 ~ 2,
+      MaritalStatus == 4 ~ 3,
+      MaritalStatus == 5 ~ 4,
+      TRUE ~ MaritalStatus
+    ),  # Recode MaritalStatus
+    HouseholdSize = case_when(
+      HouseholdSize == 1 ~ 0,            
+      HouseholdSize == 2 ~ 1,            
+      HouseholdSize == 3 ~ 2,            
+      HouseholdSize == 4 ~ 3,            
+      HouseholdSize == 5 ~ 4,            
+      HouseholdSize >= 6 ~ 5,            
+      TRUE ~ HouseholdSize 
+    ) 
+  )
+
+```
+
+After all the changes we updated the histograms to showcase our dataset's new coding schemes, which significantly improve the clarity of our distribution visualizations.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/3), 2), mar = c(6, 6, 3, 2))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(0, 1), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(0,1, 2,3), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5, 2.5, 3.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+#### Distribution Transformation
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+identify_outliers <- function(x) {
+  q25 <- quantile(x, 0.25)
+  q75 <- quantile(x, 0.75)
+  iqr <- q75 - q25
+  lower_bound <- q25 - 1.5 * iqr
+  upper_bound <- q75 + 1.5 * iqr
+  
+  return(x < lower_bound | x > upper_bound)
+}
+
+# Apply function to identify outliers in the Age column
+outliers <- identify_outliers(prepared_dataset$Age)
+
+# View outliers
+outliers_data <- prepared_dataset[outliers, ]
+boxplot(prepared_dataset$Age)
+```
+
+The boxplot shows age distribution. In the graph, we can see that there are no outliers within the distribution of Age, as all the data points fall within the necessary quartiles. This suggests a consistent age range
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+set.seed(123)  
+sampled_ages <- sample(prepared_dataset$Age, min(5000, length(prepared_dataset$Age)))
+shapiro_test <- shapiro.test(sampled_ages)
+
+# Print the results of the Shapiro-Wilk test
+print(shapiro_test)
+
+
+```
+
+We performed the Shapiro-Wilk test on a sample of the 'Age' variable from our prepared dataset, using a fixed seed to ensure repeatability. Our test yielded a W statistic value of 0.97533 and a p-value significantly lower than 0.05, suggesting that the distribution of 'Age' is not normal. Then, we have to apply a logarithmic transformation to the 'Age' variable.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+prepared_dataset <- prepared_dataset %>%
+  mutate(Log_Age = ifelse(Age > 0, log(Age), NA))  # Assign NA where Age is zero or negative to avoid errors
+
+# Check the transformed distribution of Log_Age
+ggplot(prepared_dataset, aes(x = Log_Age)) +
+  geom_histogram(binwidth = 0.1, fill = "purple", alpha = 0.7) +
+  ggtitle("Log Transformed Distribution of Age") +
+  xlab("Log(Age)") +
+  ylab("Count")
+```
+
+### 3.4 Features creation
+
+To answer the research question we need to create a binary variable (`PovertyStatus`) which will be 1 if the individual is living in Poverty according to the [Poverty Guidelines](https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines) of the Office of the Assistant Secretary For Planning and Evaluation of the USA.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+poverty_threshold <- c(15060, 20440, 25820, 31200, 36580, 41960, 47340, 52720)
+
+prepared_dataset <- prepared_dataset %>%
+  mutate(
+    PovertyStatus = case_when(
+      HouseholdSize == 1 & Income == 1 ~ 1, 
+      HouseholdSize == 2 & Income %in% c(1) ~ 1, 
+      HouseholdSize == 3 & Income %in% c(1) ~ 1, 
+      HouseholdSize == 4 & Income %in% c(1, 2) ~ 1, 
+      HouseholdSize == 5 & Income %in% c(1, 2) ~ 1, 
+      HouseholdSize == 6 & Income %in% c(1, 2, 3) ~ 1, 
+      HouseholdSize == 7 & Income %in% c(1, 2, 3) ~ 1, 
+      HouseholdSize == 8 & Income %in% c(1, 2, 3) ~ 1, 
+      TRUE ~ 0
+    )
+  )%>%
+ mutate(
+  PovertyStatus = factor(PovertyStatus, levels = c(0, 1), labels = c("Not Poor", "Poor"))
+)
+plot(prepared_dataset$PovertyStatus)
+number_poor <- sum(prepared_dataset$PovertyStatus == 1)
+
+# Calculating the total number of observations
+total_observations <- nrow(prepared_dataset)
+
+# Calculating the percentage of Poor people
+percentage_poor <- (number_poor / total_observations) * 100
+
+# Print the results
+cat("Number of Poor People:", number_poor, "\n")
+cat("Percentage of Poor People:", round(percentage_poor, 2), "%\n")
+
+```
+
+### 3.5 Exploratory data analysis
+
+## 4. Supervised Methods
+
+### 4.1 Logistic Regression
+
+#### Dataset Sampling
+
+To manage computational efficiency without sacrificing the quality of model training, we sampled 10,000 observations from our full dataset. This size strikes a balance between maintaining a substantial amount of data for robust training and ensuring the processing remains quick and manageable. We chose this number based on previous experiments and computational capacity available for this project.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+set.seed(145)
+subset_data <- prepared_dataset %>%
+  sample_n(10000)
+print(dim(subset_data))
+subset_data <- subset_data[-c(1,8,10)]
+
+# Splitting the dataset into training and testing sets
+set.seed(145)
+index <- sample(1:nrow(subset_data))
+n_tr <- round(0.8 * nrow(subset_data))
+ds_tr <- subset_data[index[1:n_tr],]
+ds_te <- subset_data[-index[1:n_tr],]
+
+
+```
+
+The removed columns include identifiers that do not contribute to predictive accuracy or sensitive information. By setting the same seed before each critical operation, we ensure that the sampling and split processes are repeatable, allowing for exact replication of the study. This setup facilitates a balanced approach to training robust models while considering computational resources.
+
+#### Feature Selection
+
+We utilized the Boruta algorithm to robustly select the most important features. This method ensures that all significant variables are included in the model, reducing the risk of omitting critical predictors.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+library(Boruta)
+set.seed(123)
+boruta_output <- Boruta(PovertyStatus ~ ., data = subset_data, doTrace = 2)
+print(boruta_output)
+plot(boruta_output, las = 2, cex.axis = 0.7, xlab = "", main = "Variable Importance")
+
+```
+
+#### Model Building and Refinement
+
+At the current stage, we constructed the logistic regression model by employing a backward stepwise selection process using the AIC criterion to identify the most significant variables. This method smoothed the model by removing less impactful features, thus enhancing its predictive efficiency and simplifying its interpretability. The final model included key variables such as HispanicOrigin, Race, Gender, Education, MaritalStatus, HouseholdSize, and Log_Age, each demonstrating a significant association with poverty status.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+library(MASS)
+initial_model <- glm(PovertyStatus ~ ., family = binomial, data = subset_data)
+selected_model <- stepAIC(initial_model, direction = "backward")
+summary(selected_model)
+
+```
+
+#### Model Validation and ROC Curve Analysis
+
+In the model validation phase, we employed Lasso regularization via the cv.glmnet function to address potential overfitting and enhance the generalizability of our model. Lasso, by applying an L1 penalty, helps in feature selection by shrinking less important predictor coefficients to zero. We used cross-validation to select the optimal lambda, which minimizes overfitting while maintaining model complexity.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+library(glmnet)
+library(pROC)
+x <- as.matrix(subset_data[, c("MaritalStatus", "HouseholdSize", "Education", "Log_Age","Race", "HispanicOrigin", "Gender")])
+y <- subset_data$PovertyStatus
+
+cv_model <- cv.glmnet(x, y, family = "binomial", alpha = 1, type.measure = "class")
+optimal_lambda <- cv_model$lambda.min
+final_model <- glmnet(x, y, family = "binomial", alpha = 1, lambda = optimal_lambda)
+
+predicted_prob_train <- predict(final_model, newx = x, type = "response")
+predicted_classes_train <- ifelse(predicted_prob_train > 0.5, 1, 0)
+train_conf_matrix <- table(Predicted = predicted_classes_train, Actual = y)
+roc_curve_train <- roc(y, predicted_prob_train)
+auc_train <- auc(roc_curve_train)
+
+print(train_conf_matrix)
+print(paste("AUC for Training Set:", auc_train))
+
+
+```
+
+The effectiveness of the model was quantitatively assessed using ROC curve analysis and confusion matrices for both training and testing datasets. ROC curves provide a comprehensive view of the trade-off between sensitivity and specificity at various threshold settings, helping us to understand the model's diagnostic ability. The Area Under the Curve (AUC) from the ROC analysis provides a single measure of overall model performance, with the training set AUC being 0.807, indicating a good predictive capability.
+
+#### Cross-Validation with Caret
+
+Finally, we conducted further cross-validation using the `caret` package to ensure robustness. This step is crucial for verifying that our model performs consistently across different subsets of data and isn't just tailored to the specific characteristics of one dataset.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+library(caret)
+train_control <- trainControl(
+  method = "repeatedcv",  
+  number = 10,             
+  repeats = 3,            
+  classProbs = TRUE,       
+  summaryFunction = twoClassSummary 
+)
+important_vars <- c("MaritalStatus", "HouseholdSize", "Education", "Log_Age","Race", "HispanicOrigin", "Gender")
+levels(subset_data$PovertyStatus) <- c("Not_Poor", "Poor")
+model_cv <- train(
+  PovertyStatus ~ .,
+  data = subset_data[, c(important_vars, "PovertyStatus")],
+  method = "glmnet",
+  trControl = train_control,
+  tuneLength = 5,
+  metric = "ROC"
+)
+
+print(model_cv)
+
+
+
+```
+
+#### Model Evaluation on Training and Testing Sets
+
+After fitting the logistic regression model and applying regularization, we assessed the model's performance on both the training and testing datasets. This evaluation step helps verify the model's ability to generalize to new, unseen data, which is crucial for practical applications.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show"
+library(caret)
+library(pROC)
+set.seed(123) 
+
+# Training the logistic regression model on the training set
+model <- glm(PovertyStatus ~ HispanicOrigin + Race + Gender + 
+    Education + MaritalStatus + HouseholdSize + Log_Age, family = binomial, data = ds_tr)
+
+# Training set evaluation
+predicted_prob_train <- predict(model, newdata = ds_tr, type = "response")
+roc_curve_train <- roc(ds_tr$PovertyStatus, predicted_prob_train)
+auc_train <- auc(roc_curve_train)
+
+# Testing set evaluation
+predicted_prob_test <- predict(model, newdata = ds_te, type = "response")
+roc_curve_test <- roc(ds_te$PovertyStatus, predicted_prob_test)
+auc_test <- auc(roc_curve_test)
+
+# Computing performance metrics
+conf_matrix_train <- table(Predicted = ifelse(predicted_prob_train > 0.5, "Poor", "Not Poor"), Actual = ds_tr$PovertyStatus)
+conf_matrix_test <- table(Predicted = ifelse(predicted_prob_test > 0.5, "Poor", "Not Poor"), Actual = ds_te$PovertyStatus)
+
+accuracy_train <- sum(diag(conf_matrix_train)) / sum(conf_matrix_train)
+accuracy_test <- sum(diag(conf_matrix_test)) / sum(conf_matrix_test)
+
+sensitivity_train <- conf_matrix_train[2, 2] / sum(conf_matrix_train[2, ])
+specificity_train <- conf_matrix_train[1, 1] / sum(conf_matrix_train[1, ])
+precision_train <- conf_matrix_train[2, 2] / sum(conf_matrix_train[, 2])
+f1_score_train <- 2 * precision_train * sensitivity_train / (precision_train + sensitivity_train)
+
+sensitivity_test <- conf_matrix_test[2, 2] / sum(conf_matrix_test[2, ])
+specificity_test <- conf_matrix_test[1, 1] / sum(conf_matrix_test[1, ])
+precision_test <- conf_matrix_test[2, 2] / sum(conf_matrix_test[, 2])
+f1_score_test <- 2 * precision_test * sensitivity_test / (precision_test + sensitivity_test)
+
+# Data frame with metrics
+metrics <- data.frame(
+  Set = c("Training", "Testing"),
+  Accuracy = c(accuracy_train, accuracy_test),
+  Sensitivity = c(sensitivity_train, sensitivity_test),
+  Specificity = c(specificity_train, specificity_test),
+  Precision = c(precision_train, precision_test),
+  F1_Score = c(f1_score_train, f1_score_test),
+  AUC = c(auc_train, auc_test)
+)
+
+knitr::kable(metrics, caption = "Model Evaluation Metrics")
+
+# ROC curves
+plot(roc_curve_train, main = "ROC Curve for Training Data", col = "blue")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+plot(roc_curve_test, add = TRUE, col = "red")
+legend("bottomright", legend = c("Training", "Test"), col = c("blue", "red"), lwd = 2)
+
+```
+
+The results indicate strong accuracy and specificity, showing the model's capability to correctly identify non-poverty cases. However, the lower sensitivity and precision suggest a need for improvement in identifying actual poverty cases.
+
+We then trained a logistic regression model on a dataset balanced through downsampling to ensure fair representation of both "Poor" and "Not Poor" classes. The model showed good accuracy (74.35%) and a balanced performance between sensitivity (74.14%) and specificity (74.56%), indicating its effectiveness in identifying both classes accurately. Precision (74.78%) and F1 Score (74.46%) further confirmed the model's reliability in making precise predictions. These metrics collectively demonstrate that the model is robust and can be effectively applied in real-world scenarios for predicting poverty status, ensuring equitable decision-making and resource allocation.
+
+```{r}
+library(dplyr)
+
+# Splitting the data into majority and minority classes
+majority_data <- ds_tr[ds_tr$PovertyStatus == "Not Poor",]
+minority_data <- ds_tr[ds_tr$PovertyStatus == "Poor",]
+
+# Downsampling the majority class
+set.seed(123)  # For reproducibility
+majority_downsampled <- majority_data %>%
+  sample_n(size = nrow(minority_data), replace = FALSE)
+balanced_data <- rbind(majority_downsampled, minority_data)
+
+# Training your model on the balanced dataset
+model <- glm(PovertyStatus ~ HispanicOrigin + Race + Gender + 
+    Education + MaritalStatus + HouseholdSize + Log_Age, family = binomial, data = balanced_data)
+
+predicted_prob_train <- predict(model, newdata = balanced_data, type = "response")
+conf_matrix_train <- table(Predicted = ifelse(predicted_prob_train > 0.5, "Poor", "Not Poor"), Actual = balanced_data$PovertyStatus)
+
+# Computing new metrics
+accuracy_train <- sum(diag(conf_matrix_train)) / sum(conf_matrix_train)
+sensitivity_train <- conf_matrix_train[2, 2] / sum(conf_matrix_train[2, ])
+specificity_train <- conf_matrix_train[1, 1] / sum(conf_matrix_train[1, ])
+precision_train <- conf_matrix_train[2, 2] / sum(conf_matrix_train[, 2])
+f1_score_train <- 2 * precision_train * sensitivity_train / (precision_train + sensitivity_train)
+
+# Creating a data frame with metrics
+metrics_df <- data.frame(
+  Set = "Training",
+  Accuracy = accuracy_train,
+  Sensitivity = sensitivity_train,
+  Specificity = specificity_train,
+  Precision = precision_train,
+  F1_Score = f1_score_train
+)
+
+knitr::kable(metrics_df, caption = "Model Evaluation Metrics for Training Set")
+
+
+
+
+
+```
+
+Each step we took, from data preparation to complex model validation, was driven by the need to develop a predictive model that is not only accurate but also robust and generalizable across different data samples. This methodical approach ensures that the insights and predictions derived from our logistic regression model are reliable and actionable.
+
+### 4.2 CART (Decision Tree)
+
+We start with an extensive decision tree using the classic splitting method (80/20)
+
+```{r}
+#Create training sets
+set.seed(145)
+index <- sample(1:nrow(prepared_dataset))
+n_tr <- round(0.8 * nrow(prepared_dataset))
+ds_tr <- prepared_dataset[index[1:n_tr],]
+ds_te <- prepared_dataset[-index[1:n_tr],]
+ds_tr<-ds_tr[-c(1,8,10)]
+ds_te<-ds_te[-c(1,8,10)]
+#Creating the tree
+poverty_ct <- rpart(PovertyStatus ~ ., data=ds_tr,control = list(cp=0.001) )
+rpart.plot(poverty_ct)
+```
+
+```{r}
+#Confusio matrix
+caret::confusionMatrix(reference=ds_tr$PovertyStatus, data=predict(poverty_ct,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_te$PovertyStatus, data=predict(poverty_ct, newdata=ds_te, type="class"),
+                       positive="Poor")
+```
+
+**To do:** Create chart with specificity, sensitivity, accuracy
+
+Reviewing the confusion matrix we can say that there are not overfitting problems. However, it is easy to appreciate the imbalance problems, as the specificity and the sensitivity have a big difference in between. This was an expected issue due to the data distribution. As just the 7% of the observations are under the category "Poor" the model is biased to predict "Not Poor".
+
+To fix the imbalance issue we selected to use "Down-Sampling".
+
+```{r}
+#downsampling
+set.seed(123) ## for reproducibility
+ds_tr_down <- downSample(subset(ds_tr, select=-PovertyStatus), y=ds_tr$PovertyStatus, yname="PovertyStatus")
+
+
+poverty_ct <- rpart(PovertyStatus ~ ., data=ds_tr_down, control = list(cp=0.001))
+rpart.plot(poverty_ct)
+
+
+```
+
+```{r}
+#Confusio matrix
+caret::confusionMatrix(reference=ds_tr_down$PovertyStatus, data=predict(poverty_ct,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_te$PovertyStatus, data=predict(poverty_ct, newdata=ds_te, type="class"),
+                       positive="Poor")
+```
+
+The imbalance issue was successfully solved. But, this improvement was done affecting our accuracy, which is \~10% lower. Another problem detected is that now we have an overfitting situation.
+
+To solve the overfitting we select the pruning method.
+
+```{r}
+#Pruning
+set.seed(123) ## for reproducibility
+plotcp(poverty_ct, upper = "split") # -> select leftmost mean under the line 
+printcp(poverty_ct) # look for the corresponding cp
+poverty_ct_prun <- prune(poverty_ct, cp=0.0011706) # 10 splits, 10 0.0011706
+rpart.plot(poverty_ct_prun)
+
+```
+
+```{r}
+#Confusio matrix
+caret::confusionMatrix(reference=ds_tr_down$PovertyStatus, data=predict(poverty_ct_prun,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_te$PovertyStatus, data=predict(poverty_ct_prun, newdata=ds_te, type="class"),
+                       positive="Poor") 
+```
+
+The prunning reduced the accuracy difference between the training and testing set. However it still has an important difference which shows overfitting.
+
+Trying Random Forest
+
+```{r}
+poverty_rf <- ranger(PovertyStatus~., 
+                  data=ds_tr,
+                  num.trees = 500,
+                  mtry=5)
+poverty_rf
+poverty_pred_tr <- predict(poverty_rf, data = ds_tr, type="response")
+poverty_pred_te <- predict(poverty_rf, data = ds_te, type="response")
+
+confusionMatrix(data=poverty_pred_tr$predictions, reference = ds_tr$PovertyStatus, positive = "Poor")
+confusionMatrix(data=poverty_pred_te$predictions, reference = ds_te$PovertyStatus, positive = "Poor")
+
+```
+
+```{r}
+poverty_rf <- ranger(PovertyStatus~., 
+                  data=ds_tr_down,
+                  num.trees = 500,
+                  mtry=5)
+poverty_rf
+poverty_pred_tr <- predict(poverty_rf, data = ds_tr_down, type="response")
+poverty_pred_te <- predict(poverty_rf, data = ds_te, type="response")
+
+confusionMatrix(data=poverty_pred_tr$predictions, reference = ds_tr_down$PovertyStatus, positive = "Poor")
+confusionMatrix(data=poverty_pred_te$predictions, reference = ds_te$PovertyStatus, positive = "Poor")
+```
+
+### 4.3 Support Vector Machine
+
+## 5. Unsupervised Methods
+
+## 6. Results
+
+## 7. Recommendations and discussion
+
+## 8. References
