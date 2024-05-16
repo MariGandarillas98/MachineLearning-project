@@ -1,0 +1,1310 @@
+---
+title: "Machine Learning Project"
+format: html
+code-fold: true
+code-tools: true
+toc: true
+toc-depth: 3
+self-contained: true
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE)
+install.packages("here")
+install.packages("ROCR")
+install.packages("DT")
+install.packages("gt")
+install.packages("expss")
+install.packages("cowplot")
+install.packages("vcd")
+install.packages("grid")
+install.packages("sf", dependencies=TRUE, repos='http://cran.rstudio.com/')
+install.packages("leaflet")
+install.packages("kableExtra")
+install.packages("Metrics")
+install.packages("mlr")
+install.packages("caret")
+install.packages("ISLR")
+install.packages("kernlab")
+install.packages("htmltools")
+install.packages("liver")
+install.packages("rpart.plot")
+install.packages("ranger")
+install.packages("summarytools")
+install.packages("randomForest")
+install.packages("haven")
+install.packages("readxl")
+install.packages("tidyverse")
+install.packages("corrplot")
+install.packages("pscl")
+install.packages("carData")
+install.packages("car")
+install.packages("ggpubr")
+install.packages("ggridges")
+install.packages("visdat")
+install.packages("xgboost")
+install.packages("glmnet")
+library(xgboost)
+library(dplyr)
+library(haven)
+library(tidyr)
+library(reshape2)
+library(readxl)
+library(here)
+library(tidyverse)
+library(knitr)
+library(corrplot)
+library(lmtest)  
+library(pROC)  
+library(ROCR)  
+library(lubridate)  
+library(pscl)  
+library(carData)  
+library(car)
+library(pROC)
+library(ROCR)
+library(ggplot2)
+library(ggpubr)
+library(ggridges)
+library(cowplot)
+library(vcd)
+library(sf)
+library(kableExtra)
+library(gridExtra)
+library(visdat)
+library(liver)
+library(rpart)
+library(rpart.plot)
+library(ranger)
+library(summarytools)
+library(ISLR)
+library(e1071)
+library(kernlab)
+library(caret)
+library(Metrics)
+library(mlr)
+library(randomForest)
+library(MASS)
+library(glmnet)
+library(pROC)
+library(dplyr)
+library(knitr)
+```
+
+![](logo_UNIL.png){fig-align="left" width="195"}
+
+# **Understanding Poverty in America: Key Predictors and Machine Learning Insights**
+
+**Machine Learning in Business Analytics - Spring 2024**
+
+**Marcela Choque Quispe, Mariel Gandarillas Calderon, and Reisa Reci**
+
+![](Marcela.jpeg){fig-align="left" width="117"}
+
+![](Mariel.jpeg){width="115"}
+
+![](Reisa.jpeg){width="96"}
+
+**2024-06-09**
+
+*This project was written by us and in our own words, except for quotations from published and unpublished sources, which are clearly indicated and acknowledged as such. We are conscious that the incorporation of material from other works or a paraphrase of such material without acknowledgement will be treated as plagiarism, subject to the custom and usage of the subject, according to the University Regulations. The source of any picture, map or other illustration is also indicated, as is the source, published or unpublished, of any material not resulting from our own research.*
+
+## 1. Abstract
+
+This research project delves into the socioeconomic dimensions of poverty in the United States, leveraging the comprehensive dataset provided by the Household Survey USA 2024. The investigation centers on a meticulous examination of various demographic and socioeconomic variables, including race, age, gender, geographic location, educational attainment, marital status, and income, to delineate the contours of poverty across the nation. By aligning the income metrics with the poverty threshold defined by the United Nations, this study categorizes individuals into "poor" and "non-poor" groups, facilitating a nuanced analysis of poverty's underpinnings.
+
+Employing advanced machine learning methodologies, the project aims to unearth the pivotal factors that significantly predispose individuals to poverty, thereby shedding light on the intricate web of influences that perpetuate economic disparity. The analytical journey encompasses preprocessing the data to ensure robustness, employing exploratory data analysis to unravel preliminary insights, and systematically applying feature selection techniques to distill the variables of highest relevance.
+
+By crafting predictive models through a rigorous process of training, testing, and validation, this investigation aspires to provide a data-driven foundation for understanding poverty. The ultimate objective is to cultivate a rich body of knowledge that can underpin policy initiatives and intervention strategies. Through these insights, the study endeavors to contribute to the broader dialogue on poverty reduction, aiming to catalyze informed action that can significantly alter the socioeconomic landscape and improve the livelihoods of those at the margins of society in the United States.
+
+## 2. Introduction
+
+In an era where socio-economic disparities are increasingly under the spotlight, understanding the dynamics of poverty within the United States is more pertinent than ever. This report harnesses the data from the Household Survey USA 2024, a comprehensive dataset provided by the United States Census Bureau, to explore the multifaceted nature of poverty.
+
+### 2.1 Context and Background
+
+With the latest data sourced from [the United States Census Bureau](https://www.census.gov/programs-surveys/household-pulse-survey/data/datasets.2024.html#list-tab-1264157801), we delve into the current state of American households. By establishing a poverty threshold in accordance with the United Nations' guidelines, we aim to classify individuals as "poor" or "non-poor," thereby setting the stage for an in-depth analysis of poverty-related factors.
+
+### 2.2 Motivation
+
+As emerging data analysts, we are compelled by the capacity of data to unfold narratives of economic well-being and hardship. Through this project, we seek to quantify the correlates of poverty and, in doing so, contribute to the broader discourse on socio-economic health in the U.S.
+
+### 2.3 Aim of the Investigation
+
+Our primary objective is to discern the variables that most significantly influence the probability of an individual falling below the poverty line. The investigation will pivot on the following points of inquiry:
+
+-   Identifying the demographic and socio-economic variables that heighten the risk of poverty.
+
+-   Understanding the interaction between these variables and their collective impact on economic status.
+
+### 2.4. Method & General Outlook
+
+The methodology will involve rigorous data wrangling to prepare the dataset for analysis, followed by statistical techniques to evaluate the relationships between our variables of interest and poverty status.
+
+The report will progress through the following structure:
+
+-   **Section 2**: Articulates the contextual background and motivations behind the study.
+
+-   **Section 3**: Provides an overview of the variables, describing each in detail and outlining the data wrangling process.
+
+-   **Section 4**: Explores the analytical methods employed, drawing on relevant literature to situate our approach within the broader field of socio-economic analysis.
+
+-   **Section 5**: Presents the findings of our study, addressing the initial research objectives and offering interpretations of the results.
+
+-   **Section 6**: Discusses the implications of our findings from a socio-economic perspective, considering the potential for policy intervention and support.
+
+-   **Section 7**: Lists all references and resources utilized throughout the research process.
+
+## 3. Data Description
+
+The core of our analysis is the Household Survey USA 2024 dataset. We will enrich this dataset by creating a new feature to categorize individuals based on their economic status, using the UN's poverty line as our benchmark. Our variables of interest are demographically and socio-economically diverse, encompassing race, age, gender, geographic location, education, marital status, and income.
+
+### 3.1. Variable Description and Data-Set Preparation
+
+The dataset utilized in this project, is titled "Household Survey USA 2024," originates from the official website of the United States Census Bureau. It constitutes a compilation of data collected through household surveys conducted across diverse regions of the United States. This dataset has the following variables:
+
+```{r echo=FALSE}
+
+
+data_set <- read.csv(here::here("data_set.csv"))
+
+prepared_dataset <- data_set %>%
+  dplyr::select(
+    RecordID = SCRAM,
+    HispanicOrigin = RHISPANIC, 
+    Race = RRACE,  
+    BirthYear = TBIRTH_YEAR,
+    Gender = EGENID_BIRTH, 
+    Location = REGION,  
+    Education = EEDUC,  
+    MaritalStatus = MS,  
+    Income = INCOME,
+    HouseholdSize = THHLD_NUMPER
+  ) %>%
+  mutate(
+    Age = year(Sys.Date()) - BirthYear
+  ) %>%
+  dplyr::select(- BirthYear
+  )
+```
+
+```{r, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+ 
+prepared_dataset <- prepared_dataset%>%
+  dplyr::select(
+    RecordID, HispanicOrigin, Race, Gender, Location, Education, MaritalStatus, Income, HouseholdSize, Age
+  )
+```
+
+#### 3.1.1 Variable Description and Dataset Preparation
+
+In this step, we selected key variables like ID numbers, where people come from, their ethnicity, gender, education level, income, and age. The table gives a quick look at these details,including their names, data types, and brief explanations (prior the data transformation).
+
+```{r}
+
+variable_types <- as.data.frame(sapply(prepared_dataset, class))
+variable_types <- cbind(Name = names(prepared_dataset), variable_types)
+colnames(variable_types) <- c("Name", "Type")
+rownames(variable_types) <- NULL
+
+explanations <- c(
+  "Identifier for each observation.",
+  "Hispanic origin indicator where 1 means No, and 2 Yes.",
+  "Race and ethnicity indicator,where 1 means White, 2 Black, 3 Asian, and 4 Other.",
+  "Current gender identity, where 1 is Male, 2 Female, 3 Trasgender, and 4 Other",
+  "Region code, where 1 means Northeast, 2 South, 3 Midwest, and 4 West.",
+  "Education attainment, where 1 is Less than High School, 2 Some High School, 3 High School graduate, 4 College in progress, 5 AA or AS degree, 6 Bachelor's degree, and 7 Master's degree.",
+  "Marital status, where 1 is Married, 2 Widowed, 3 Divorced, 4 Separated, and 5 Never married.",
+  "Ordinal variable representing the household income before taxes  per year level, where 1 is Less than $25k, 2 is $25k-$34,9k, 3 is $35k-$49,9k, 4 is $50k-$74,9k, 5 is $75k-$99,9k, 6 is $100k-$149,9k, 7 is $150k-$199,9k. and 8 is higher than $200k.",
+  "Total number of people in household. Numerical variable",
+  "Variable representing the age"
+)
+
+
+variable_types$Explanation <- explanations
+
+
+kable(variable_types)
+
+```
+
+### 3.2 Data Cleaning
+
+Upon visualizing the variable types, it's evident that the majority are integers, signifying categorical data, while only 'Age' stands out as numerical. Additionally, 'RecordID' is characterized as a character variable, serving as a unique identifier.
+
+```{r}
+
+
+vis_dat(prepared_dataset, warn_large_data = FALSE) + 
+  scale_fill_brewer(palette="Paired")
+
+
+```
+
+```{r}
+
+prepared_dataset_modified <- prepared_dataset %>%
+  mutate(across(everything(), ~ifelse(. == -99, NA, .)))
+
+# Count NA values, including those originally set as -99
+na_counts <- colSums(is.na(prepared_dataset_modified))
+
+na_percentages <- (na_counts / nrow(prepared_dataset_modified)) * 100
+
+# Create a data frame to display the counts
+na_df <- data.frame(
+  Variable = names(na_counts), 
+  "Counting of NAs" = na_counts, 
+  Percentage = sprintf("%.2f%%", na_percentages)  # formatted as percentage with 2 decimal places
+)
+
+kable(na_df,
+       align = 'c',
+          options = list(
+            dom = 'lBfrtip', 
+            pageLength = 15,   
+            lengthMenu = c(10, 15, 20), 
+            paging = TRUE,
+            searching = TRUE,
+            ordering = TRUE
+          ))
+```
+
+This table presents the count and percentage of missing values (NA) for each variable in the dataset. Notably, 'MaritalStatus' and 'Income' show some missing data, with 'Income' having the highest percentage of missing values at 1.84%. Additionally, it's important to note that in this dataset, the value -99 is interpreted as NA.
+
+### 3.3 Data modifications
+
+Eight histograms displaying the distributions variables within a data set will help us to determine which adjustments in the data we need to do.}.
+
+```{r}
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/3), 2), mar = c(6, 6, 3, 2))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(1, 2), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(1, 2,3,4), na.rm = TRUE)) {
+    breaks_vals = c(0.5, 1.5, 2.5, 3.5,4.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+In general, the change will involve adding the category 0 to all variables. Additionally, as part of this adjustment, categories with minority distributions will be grouped together. For example, in the 'Education' variable, the 7 categories will be reduced to just 5
+
+#### 3.3.1 Re-coding of Variables
+
+The new categories for the following variables are as shown in the table below:
+
+```{r}
+variable_change <- cbind(c("RHispanic", "Gender", "Race", "Location", "Education", "Marital Status"), explanations)
+colnames(variable_change) <- c("Name", "New categories")
+rownames(variable_change) <- NULL
+
+explanations <- c(
+  "Where 0 means No, and 1 Yes.",
+  "Where 0 means Male, 1 Female, and 3 Others.",
+  "Where 0 means White, 1 Black, 2 Others.",
+  "Where 0 means Northwest, 1 South, 2 Midwest, 3 West.",
+  "Where 0 means No education, 1 High School graduate, 2 AA or AS degree, 3 Bachelor's degree, and 4 Master's degree.",
+  "where 0 is Married, 1 Widowed, 2 Divorced, 3 Separated, and 4 Never married."
+)
+
+
+
+kable(variable_change)
+```
+
+#### 3.3.2 NAs Treatment
+
+As the proportion of NAs is insignificant (0.6% in Marital Status and 1.9% in Income), these observations will be removed.
+
+```{r}
+
+prepared_dataset<-prepared_dataset%>%
+  filter(
+    MaritalStatus != -99,  # Exclude -99 from MaritalStatus
+    Income != -99,  # Exclude -99 from Income
+    Income != -88  # Exclude -88 from Income
+  ) %>%
+   mutate(
+    HispanicOrigin = ifelse(HispanicOrigin == 1, 0, ifelse(HispanicOrigin == 2, 1, HispanicOrigin)),  # Recode HispanicOrigin
+    Gender = case_when(
+      Gender == 1 ~ 0, 
+      Gender == 2 ~ 1,
+      Gender == 3 ~ 2,
+      TRUE ~ Gender
+    ),  # Recode Gender
+    Race = case_when(
+      Race == 1 ~ 0,
+      Race == 2 ~ 1,
+      Race %in% c(3, 4) ~ 2,
+      TRUE ~ Race
+    ),  # Recode Race
+    Location = case_when(
+      Location == 1 ~ 0,
+      Location == 2 ~ 1,
+      Location == 3 ~ 2,
+      Location == 4 ~ 3,
+      TRUE ~ Location
+    ),  # Recode Location
+    Education = case_when(
+      Education %in% c(1, 2) ~ 0,
+      Education == 3 ~ 1,
+      Education == 4 ~ 1,
+      Education == 5 ~ 2,
+      Education == 6 ~ 3,
+      Education == 7 ~ 4,
+      TRUE ~ Education
+    ),  # Recode Education
+    MaritalStatus = case_when(
+      MaritalStatus == 1 ~ 0,
+      MaritalStatus == 2 ~ 1,
+      MaritalStatus == 3 ~ 2,
+      MaritalStatus == 4 ~ 3,
+      MaritalStatus == 5 ~ 4,
+      TRUE ~ MaritalStatus
+    ),  # Recode MaritalStatus
+    HouseholdSize = case_when(
+      HouseholdSize == 1 ~ 0,            
+      HouseholdSize == 2 ~ 1,            
+      HouseholdSize == 3 ~ 2,            
+      HouseholdSize == 4 ~ 3,            
+      HouseholdSize == 5 ~ 4,            
+      HouseholdSize >= 6 ~ 5,            
+      TRUE ~ HouseholdSize 
+    ) 
+  )
+
+```
+
+After all the changes we updated the histograms to showcase our dataset's new coding schemes, which significantly improve the clarity of our distribution visualizations.
+
+```{r}
+numeric_vars <- sapply(prepared_dataset, is.numeric)
+numeric_cols <- names(numeric_vars[numeric_vars])
+par(mfrow = c(ceiling(length(numeric_cols)/3), 2), mar = c(6, 6, 3, 2))
+for (col in numeric_cols) {
+  
+  if (all(prepared_dataset[[col]] %in% c(0, 1), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5)  
+  } else {
+    if (all(prepared_dataset[[col]] %in% c(0,1, 2,3), na.rm = TRUE)) {
+    breaks_vals = c(-0.5,0.5, 1.5, 2.5, 3.5)  
+  } else {
+    range_vals = range(prepared_dataset[[col]], na.rm = TRUE)
+    breaks_vals = seq(from = floor(range_vals[1]), to = ceiling(range_vals[2]), by = 1)
+  }}
+
+  hist(prepared_dataset[[col]], breaks = breaks_vals, main = paste("Distribution of", col), xlab = col,
+       xaxt = 'n', right = FALSE)  
+
+  axis(1, at = floor(min(breaks_vals)):ceiling(max(breaks_vals)), 
+       labels = floor(min(breaks_vals)):ceiling(max(breaks_vals)))
+}
+```
+
+#### 3.3.3 Distribution Transformation
+
+```{r}
+identify_outliers <- function(x) {
+  q25 <- quantile(x, 0.25, na.rm = TRUE)
+  q75 <- quantile(x, 0.75, na.rm = TRUE)
+  iqr <- q75 - q25
+  lower_bound <- q25 - 1.5 * iqr
+  upper_bound <- q75 + 1.5 * iqr
+  
+  return(x < lower_bound | x > upper_bound)
+}
+
+# Apply function to identify outliers in the Age column
+outliers <- identify_outliers(prepared_dataset$Age)
+
+# View outliers
+outliers_data <- prepared_dataset[outliers, ]
+
+# Creating a nicer boxplot
+boxplot(prepared_dataset$Age,
+        main = "Age Boxplot",       
+        ylab = "Age",                  
+        col = "lightblue",             
+        border = "darkblue",           
+        notch = TRUE,                  
+        outline = TRUE,                
+        las = 1)                       
+if (length(outliers_data$Age) > 0) {
+  text(rep(1, length(outliers_data$Age)), outliers_data$Age, labels = outliers_data$Age, cex = 0.8, pos = 4)
+}
+
+```
+
+The boxplot shows age distribution. In the graph, we can see that there are no outliers within the distribution of Age, as all the data points fall within the necessary quartiles. This suggests a consistent age range.
+
+```{r echo=FALSE, include=FALSE}
+
+set.seed(123)  
+sampled_ages <- sample(prepared_dataset$Age, min(5000, length(prepared_dataset$Age)))
+shapiro_test <- shapiro.test(sampled_ages)
+
+```
+
+However, we performed the Shapiro-Wilk test on a sample of the 'Age' variable from our prepared dataset. Our test yielded a W statistic value of 0.97533 and a p-value significantly lower than 0.05, suggesting that the distribution of 'Age' is not normal. Then, we have to apply a logarithmic transformation to the 'Age' variable.
+
+```{r}
+
+prepared_dataset <- prepared_dataset %>%
+  mutate(Log_Age = ifelse(Age > 0, log(Age), NA))  # Assign NA where Age is zero or negative
+
+# Filtering out NA values for clean plotting
+prepared_dataset <- prepared_dataset %>%
+  filter(!is.na(Log_Age))
+
+# Check the transformed distribution of Log_Age
+ggplot(prepared_dataset, aes(x = Log_Age)) +
+  geom_histogram(binwidth = 0.1, fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Log Transformed Distribution of Age") +
+  xlab("Log(Age)") +
+  ylab("Count") +
+  theme_minimal(base_size = 14) +  # Apply a minimal theme with readable base size
+  theme(plot.title = element_text(hjust = 0.5),  # Center title
+        axis.title = element_text(face = "bold", color = "#333333"),  # Bold axis titles
+        axis.text = element_text(color = "#666666")) +  # Adjust text color for readability
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +  # Clean breaks on the x-axis
+  scale_y_continuous(labels = scales::comma)  # Format y-axis labels
+```
+
+#### 3.3.4 Features creation
+
+To answer the research question we need to create a binary variable (`PovertyStatus`) which will be 1 if the individual is living in Poverty according to the [Poverty Guidelines](https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines) of the Office of the Assistant Secretary For Planning and Evaluation of the USA.
+
+```{r}
+
+prepared_dataset <- prepared_dataset %>%
+  mutate(
+    PovertyStatus = case_when(
+      HouseholdSize == 1 & Income == 1 ~ 1, 
+      HouseholdSize == 2 & Income %in% c(1) ~ 1, 
+      HouseholdSize == 3 & Income %in% c(1) ~ 1, 
+      HouseholdSize == 4 & Income %in% c(1, 2) ~ 1, 
+      HouseholdSize == 5 & Income %in% c(1, 2) ~ 1, 
+      HouseholdSize == 6 & Income %in% c(1, 2, 3) ~ 1, 
+      HouseholdSize == 7 & Income %in% c(1, 2, 3) ~ 1, 
+      HouseholdSize == 8 & Income %in% c(1, 2, 3) ~ 1, 
+      TRUE ~ 0
+    )
+  ) %>%
+  mutate(
+    PovertyStatus = factor(PovertyStatus, levels = c(0, 1), labels = c("Not Poor", "Poor"))
+  )
+
+# Creating a bar plot with ggplot
+ggplot(prepared_dataset, aes(x = PovertyStatus, fill = PovertyStatus)) +
+  geom_bar() +
+  labs(title = "Distribution of Poverty Status",
+       x = "Poverty Status",
+       y = "Count") +
+  scale_fill_manual(values = c("Not Poor" = "darkblue", "Poor" = "lightblue")) +  # Assign colors
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5) +  # Add data labels
+  theme_minimal() +  # Use a minimal theme
+  theme(axis.title = element_text(face = "bold", color = "#333333"),
+        plot.title = element_text(hjust = 0.5))
+
+```
+
+### 3.4 Exploratory data analysis
+
+In the spearman correlation graph it was observed some important points regarding the relationship of the income variable, first there is a notable positive correlation between level of education and high income, which indicates a relationship between achieving a high level of education and high income, and second the correlation with Marital Status indicates that being married may be associated with financial establishment.
+
+```{r echo=FALSE}
+variables <- c("HispanicOrigin", "Race", "Gender", "Location", "Education", "MaritalStatus", "Income", "HouseholdSize", "Log_Age")  
+corr_s <- cor(prepared_dataset[, variables], method = "spearman")  
+
+corr_df <- as.data.frame.table(corr_s)  
+
+ggplot(corr_df, aes(x = Var1, y = Var2, fill = Freq)) +   geom_tile(color = "white") +   scale_fill_gradient2(low = "#0C2340FF", mid = "white", high = "#0F8D7BFF", midpoint = 0, limit = c(-1, 1)) +   theme_minimal() +   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8),         axis.text.y = element_text(size = 8),         plot.title = element_text(size = 14)) +   labs(title = "Spearman Correlation Matrix",        x = "Variables",        y = "Variables") +   scale_x_discrete(labels = c("Hispanic Origin", "Race", "Gender", "Location", "Education", "Marital Status", "Income", "Household Size", "Log(Age)")) +    scale_y_discrete(labels = c("Hispanic Origin", "Race", "Gender", "Location", "Education", "Marital Status", "Income", "Household Size", "Log(Age)")) 
+```
+
+According to the results of the Spearman Correlation graph, we proceeded to observe the distribution of income level and level of education, which shows that the group considered "Poor" is accumulated in the group of people with high school education and on the other hand, the group with the highest income is the group of people with Bachelor or Master degree.
+
+```{r echo=FALSE}
+# Define the colors in the palette
+my_palette <- c("#9EA2A2FF","#C6D4D6FF","#DCEDDF","#A2D4AE","#0F8D7BFF",                  "#5E81ACFF","#236192FF","#0C2340FF")
+poverty_palette <- c("#A2D4AE", "#236192FF")
+# Stacked bar chart of Education by Income
+plot_income <- ggplot(prepared_dataset, aes(x = as.factor(Education), fill = factor(Income, levels = 8:1))) +  
+  geom_bar() +  
+  labs(title = "Education Distribution by Income Interval",
+       x = "Education Level", y = "Sum of Education Level") +
+  scale_fill_manual(values = my_palette, name = "Income") +
+  theme_minimal() +
+  scale_x_discrete(labels = c("Less than High School", "High School", "AA degree", "Bachelor's degree", "Master's degree")) +
+  theme(plot.title = element_text(size = 11),
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 9))
+
+# Education Distribution by Poverty Status
+plot_poverty <- ggplot(prepared_dataset, aes(x = as.factor(Education), fill = factor(PovertyStatus))) +
+  geom_bar(stat = "count", position = "stack") +
+  labs(title = "Education Distribution by Poverty Status",
+       x = "Education Level", y = "Count of Individuals") +
+  scale_fill_manual(values = poverty_palette, name = "Poverty Status") +
+  theme_minimal() +
+  scale_x_discrete(labels = c("Less than High School", "High School", "AA degree", "Bachelor's degree", "Master's degree")) +
+  theme(plot.title = element_text(size = 11),
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),  
+        axis.text.y = element_text(size = 8),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 7))
+
+grid.arrange(plot_income, plot_poverty, ncol = 2)
+```
+
+Following the analysis, it was observed that the variable Marital Status has a significant correlation, and it is noticed that most of the people surveyed are married people, and on the other hand, analyzing the proportions of each group, in the group of married people, there is a greater proportion of people with the highest income and the least amount of people with low income.
+
+```{r echo=FALSE}
+# Marital Status Labels
+marital_status_labels <- c("Married", "Widowed", "Divorced", "Separated", "Never Married")
+
+# Total income distribution by marital status
+plot1 <- ggplot(prepared_dataset, aes(x = factor(MaritalStatus, levels = 0:4, labels = marital_status_labels), fill = factor(Income, levels = 8:1))) +
+  geom_bar(position = "stack") +
+  labs(title = "Income Distribution by Marital Status",
+       x = "Marital Status", y = "Sum of Income") +
+  scale_fill_manual(values = my_palette, name = "Income") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),
+        axis.title = element_text(size = 10),
+        axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 8),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 9))
+
+# Proportion of income by marital status
+plot2 <- ggplot(prepared_dataset, aes(x = factor(MaritalStatus, levels = 0:4, labels = marital_status_labels), fill = factor(Income, levels = 8:1))) +
+  geom_bar(position = "fill") +
+  labs(title = "Income Proportion by Marital Status",
+       x = "Marital Status", y = "Proportion of Income") +
+  scale_fill_manual(values = my_palette, name = "Income") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),
+        axis.title = element_text(size = 10),
+        axis.text.x = element_text(size = 7, angle = 45, hjust = 1),
+        axis.text.y = element_text(size = 8),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 9))
+
+grid.arrange(plot1, plot2, ncol = 2)
+```
+
+Regarding the age analysis, a reasonable behavior was observed, indicating that younger people are present in the group considered poor, and the older they are, the lower the proportion of poor people. Secondly, it was observed that people between 30 and 50 have the highest income.
+
+```{r echo=FALSE}
+# Income Distribution by Age
+plot_income1 <- ggplot(prepared_dataset, aes(x = Age, fill = factor(PovertyStatus))) +
+  geom_bar(position = "stack") +
+  labs(title = "Poverty Distribution by Age",
+       x = "Age", y = "Sum of Income") +
+  scale_fill_manual(values = poverty_palette, name = "Income") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),  
+        axis.title = element_text(size = 10),  
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 8),
+         legend.position = "none")
+
+# Graph of income distribution by age showing proportions of income by marital status
+plot_income <- ggplot(prepared_dataset, aes(x = Age, fill = factor(Income, levels = 8:1))) +
+  geom_bar(position = "fill") +
+  labs(title = "Income Proportion",
+       x = "Age", y = "Proportion of Income") +
+  scale_fill_manual(values = my_palette, name = "Income") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),  
+        axis.title = element_text(size = 10),  
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 6))
+
+# Graph of poverty status distribution by age showing proportions
+plot_poverty <- ggplot(prepared_dataset, aes(x = Age, fill = factor(PovertyStatus))) +
+  geom_bar(position = "fill") +
+  labs(title = "Poverty Status Proportion",
+       x = "Age", y = "Proportion") +
+  scale_fill_manual(values = poverty_palette, name = "Poverty Status") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 8),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 9))
+
+grid.arrange(plot_income1, plot_poverty, plot_income, ncol = 3)
+```
+
+## 4.Methods
+
+This section outlines the methodology employed to determine the most effective predictive model for analyzing poverty trends in the United States. The dataset includes a comprehensive range of socio-economic indicators, demographic attributes, and other relevant factors collected through household surveys conducted across various regions of the country.The target variable for prediction is the poverty status of individuals or households, with various supervised and unsupervised learning techniques explored to identify predictive patterns. Utilizing the R programming language, the analysis encompasses both Exploratory Data Analysis (EDA) and model development stages.
+
+Regression algorithms constitute a primary focus due to the goal of accurately predicting poverty status based on relevant attributes. The dataset is split into training and testing sets using a ratio of 70:30, ensuring sufficient data for model training and evaluation. Specifically, 70% of the data is allocated for training the models, while 15% is reserved for validation purposes. The remaining 15% serves as the testing set to assess model performance on unseen data, ensuring the reliability and generalizability of the predictive models.
+
+## 4.1 Unsupervised Methods
+
+### 4.1.1 Clustering
+
+## 4.2 Supervised Methods
+
+```{r}
+#Create training sets
+set.seed(145)
+index <- sample(1:nrow(prepared_dataset))
+n_tr <- round(0.70 * nrow(prepared_dataset))
+n_val <- round(0.15 * nrow(prepared_dataset))
+
+ds_tr <- prepared_dataset[index[1:n_tr], ]  # First 70% for training
+ds_val <- prepared_dataset[index[(n_tr + 1):(n_tr + n_val)], ]  # Next 15% for validation
+ds_te <- prepared_dataset[index[(n_tr + n_val + 1):nrow(prepared_dataset)], ] #Remaining for testing
+
+ds_tr<-ds_tr[-c(1,8,10)]
+ds_te<-ds_te[-c(1,8,10)]
+ds_val<-ds_val[-c(1,8,10)]
+
+#downsampling
+set.seed(123) ## for reproducibility
+ds_tr_down <- downSample(subset(ds_tr, select=-PovertyStatus), y=ds_tr$PovertyStatus, yname="PovertyStatus")
+
+
+```
+
+### 4.2.1 Logistic Regression
+
+As a first model we built a Logistic regression model, initially using all available features related to poverty status. Employing backward stepwise selection based on AIC, we refined the model, retaining significant variables such as Hispanic origin, race, gender, education, marital status, household size, and age. Evaluating its performance, we assessed metrics like accuracy, sensitivitysp and ecificity To address class imbalance, we implemented downsampling of the majority class, improving the model's generalization across both classes.
+
+```{r results='hide'}
+initial_model <- glm(PovertyStatus ~ ., family = binomial, data = ds_tr)
+selected_model <- stepAIC(initial_model, direction = "backward")
+
+x <- as.matrix(ds_tr[, c("MaritalStatus", "HouseholdSize", "Education", "Log_Age","Race", "HispanicOrigin", "Gender", "Location" )])
+y <- ds_tr$PovertyStatus
+
+cv_model <- cv.glmnet(x, y, family = "binomial", alpha = 1, type.measure = "class")
+optimal_lambda <- cv_model$lambda.min
+final_model <- glmnet(x, y, family = "binomial", alpha = 1, lambda = optimal_lambda)
+
+predicted_prob_train <- predict(final_model, newx = x, type = "response")
+predicted_classes_train <- ifelse(predicted_prob_train > 0.5, 1, 0)
+train_conf_matrix <- table(Predicted = predicted_classes_train, Actual = y)
+roc_curve_train <- roc(y, predicted_prob_train)
+auc_train <- pROC::auc(roc_curve_train)
+```
+
+```{r echo=FALSE, results='hide'}
+# Fit the model
+model <- glm(PovertyStatus ~ HispanicOrigin + Race + Gender + 
+             Education + MaritalStatus + HouseholdSize + Log_Age + Location, 
+             family = binomial, data = ds_tr)
+
+# Training set evaluation
+predicted_prob_train <- predict(model, newdata = ds_tr, type = "response")
+roc_curve_train <- pROC::roc(ds_tr$PovertyStatus, predicted_prob_train)
+
+
+# Validation set evaluation
+predicted_prob_val <- predict(model, newdata = ds_val, type = "response")
+roc_curve_val <- pROC::roc(ds_val$PovertyStatus, predicted_prob_val)
+
+
+# Testing set evaluation
+predicted_prob_test <- predict(model, newdata = ds_te, type = "response")
+roc_curve_test <- pROC::roc(ds_te$PovertyStatus, predicted_prob_test)
+
+
+# Computing performance metrics using confusionMatrix
+# Training set
+cm_train <- confusionMatrix(reference = ds_tr$PovertyStatus, 
+                            data = factor(ifelse(predicted_prob_train > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                            positive = "Poor")
+
+# Validation set
+cm_val <- confusionMatrix(reference = ds_val$PovertyStatus, 
+                          data = factor(ifelse(predicted_prob_val > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                          positive = "Poor")
+
+# Testing set
+cm_test <- confusionMatrix(reference = ds_te$PovertyStatus, 
+                           data = factor(ifelse(predicted_prob_test > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                           positive = "Poor")
+
+# Extract metrics
+accuracy_train <- cm_train$overall['Accuracy']
+balanced_accuracy_train <- cm_train$byClass['Balanced Accuracy']
+sensitivity_train <- cm_train$byClass['Sensitivity']
+specificity_train <- cm_train$byClass['Specificity']
+
+
+accuracy_val <- cm_val$overall['Accuracy']
+balanced_accuracy_val <- cm_val$byClass['Balanced Accuracy']
+sensitivity_val <- cm_val$byClass['Sensitivity']
+specificity_val <- cm_val$byClass['Specificity']
+
+
+accuracy_test <- cm_test$overall['Accuracy']
+balanced_accuracy_test <- cm_test$byClass['Balanced Accuracy']
+sensitivity_test <- cm_test$byClass['Sensitivity']
+specificity_test <- cm_test$byClass['Specificity']
+
+
+# Create a data table for displaying
+metrics_table <- data.frame(
+  Training = round(c(accuracy_train, balanced_accuracy_train, sensitivity_train, specificity_train), 3),
+  Validation = round(c(accuracy_val, balanced_accuracy_val, sensitivity_val, specificity_val), 3)
+)
+
+# Use kable to create a table
+kable(metrics_table, format = "html", digits = 3, caption = "Classification Metrics by Dataset")
+
+
+
+
+
+```
+
+```{r}
+# Fit the model
+model <- glm(PovertyStatus ~ HispanicOrigin + Race + Gender + 
+             Education + MaritalStatus + HouseholdSize + Log_Age + Location,
+             family = binomial, data = ds_tr_down)
+
+# Training set evaluation
+predicted_prob_train <- predict(model, newdata = ds_tr, type = "response")
+roc_curve_train <- roc(ds_tr$PovertyStatus, predicted_prob_train)
+
+
+# Validation set evaluation
+predicted_prob_val <- predict(model, newdata = ds_val, type = "response")
+roc_curve_val <- roc(ds_val$PovertyStatus, predicted_prob_val)
+
+
+# Testing set evaluation
+predicted_prob_test <- predict(model, newdata = ds_te, type = "response")
+roc_curve_test <- roc(ds_te$PovertyStatus, predicted_prob_test)
+
+
+# Computing performance metrics using confusionMatrix
+# Training set
+cm_train <- confusionMatrix(reference = ds_tr$PovertyStatus, 
+                            data = factor(ifelse(predicted_prob_train > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                            positive = "Poor")
+
+# Validation set
+cm_val <- confusionMatrix(reference = ds_val$PovertyStatus, 
+                          data = factor(ifelse(predicted_prob_val > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                          positive = "Poor")
+
+# Testing set
+cm_test <- confusionMatrix(reference = ds_te$PovertyStatus, 
+                           data = factor(ifelse(predicted_prob_test > 0.5, "Poor", "Not Poor"), levels = c("Not Poor", "Poor")),
+                           positive = "Poor")
+
+# Extract metrics
+accuracy_train <- cm_train$overall['Accuracy']
+balanced_accuracy_train <- cm_train$byClass['Balanced Accuracy']
+sensitivity_train <- cm_train$byClass['Sensitivity']
+specificity_train <- cm_train$byClass['Specificity']
+
+
+accuracy_val <- cm_val$overall['Accuracy']
+balanced_accuracy_val <- cm_val$byClass['Balanced Accuracy']
+sensitivity_val <- cm_val$byClass['Sensitivity']
+specificity_val <- cm_val$byClass['Specificity']
+
+
+accuracy_test <- cm_test$overall['Accuracy']
+balanced_accuracy_test <- cm_test$byClass['Balanced Accuracy']
+sensitivity_test <- cm_test$byClass['Sensitivity']
+specificity_test <- cm_test$byClass['Specificity']
+
+
+# Create a data table for displaying
+metrics_table <- data.frame(
+  Training = round(c(accuracy_train, balanced_accuracy_train, sensitivity_train, specificity_train), 3),
+  Validation = round(c(accuracy_val, balanced_accuracy_val, sensitivity_val, specificity_val), 3)
+)
+
+# Use kable to create a table
+kable(metrics_table, format = "html", digits = 3, caption = "Classification Metrics by Dataset")
+
+# ROC curves
+plot(roc_curve_train, main = "ROC Curve for Training, Validation Data", col = "blue")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+plot(roc_curve_val, add = TRUE, col = "green")
+legend("bottomright", legend = c("Training", "Validation", "Testing"), col = c("blue", "green"), lwd = 2)
+
+
+
+```
+
+The logistic regression analysis reveals significant insights into the factors influencing poverty status among individuals in the dataset. **Education** emerges as the most critical determinant, where each incremental increase in educational attainment significantly decreases the likelihood of being categorized as poor, underscoring education as a vital lever in socio-economic mobility. **Household Size** is also a significant predictor, with larger household sizes increasing the probability of poverty, reflecting the economic pressures of supporting more individuals. **Marital Status** shows that married individuals are less likely to be poor, suggesting the economic benefits of shared financial responsibilities and resources. Notably, **Race** and **Hispanic Origin** also play roles in influencing poverty likelihood, indicating existing disparities that could be targets for social policies. The model achieves a **Balanced Accuracy** of approximately 74% across training and validation sets, demonstrating consistent performance and good generalization of the model. This balanced accuracy, closely mirroring the overall accuracy, suggests that the model is equally adept at identifying both poor and not poor individuals, which is critical in ensuring fairness in predictive assessments used for social interventions.
+
+### 4.2.2 CART (Decision Tree)
+
+The second model we tested is the Decision Tree. Initially, we began with an extensive tree and identified a need to address an imbalance issue in the training set. To resolve this problem, we applied downsampling. After adjusting the dataset, we proceeded to prune the tree applying the 1-SE rule to reduce the chances of overfitting our data.
+
+The resultant tree is the following:
+
+```{r results='hide'}
+
+#Creating the extensive tree
+poverty_ct <- rpart(PovertyStatus ~ ., data=ds_tr,control = list(cp=0.001) )
+
+
+#Confusio matrix extensive tree
+caret::confusionMatrix(reference=ds_tr$PovertyStatus, data=predict(poverty_ct,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_val$PovertyStatus, data=predict(poverty_ct, newdata=ds_val, type="class"),
+                       positive="Poor")
+
+#Facing imbalance issue
+poverty_ct <- rpart(PovertyStatus ~ ., data=ds_tr_down, control = list(cp=0.001))
+
+
+#Confusio matrix after imbalance issue
+caret::confusionMatrix(reference=ds_tr_down$PovertyStatus, data=predict(poverty_ct,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_val$PovertyStatus, data=predict(poverty_ct, newdata=ds_val, type="class"),
+                       positive="Poor")
+#Pruning
+set.seed(123) ## for reproducibility
+#plotcp(poverty_ct, upper = "split") # -> select leftmost mean under the line 
+#printcp(poverty_ct) # look for the corresponding cp
+poverty_ct_prun <- prune(poverty_ct, cp= 0.0050000) # 10 splits, 10 0.0050000
+
+#Confusio matrix pruned tree
+caret::confusionMatrix(reference=ds_tr_down$PovertyStatus, data=predict(poverty_ct_prun,type = "class"),
+                       positive="Poor")
+caret::confusionMatrix(reference=ds_val$PovertyStatus, data=predict(poverty_ct_prun, newdata=ds_val, type="class"),
+                       positive="Poor") 
+
+
+```
+
+```{r}
+rpart.plot(poverty_ct_prun)
+```
+
+```{r}
+#Getting ready the testing set number for the comparison at the end
+cm_test <- confusionMatrix(reference=ds_te$PovertyStatus, 
+                      data=predict(poverty_ct_prun, newdata=ds_te, type="class"),
+                      positive="Poor")
+
+metrics_rf_te <- cm_test$overall['Accuracy']
+metrics_rf_te <- c(metrics_rf_te, cm_test$byClass['Balanced Accuracy'])
+metrics_rf_te <- c(metrics_rf_te, cm_test$byClass['Sensitivity'])
+metrics_rf_te <- c(metrics_rf_te, cm_test$byClass['Specificity'])
+#Getting ready the training and validation set
+
+cm_val <- confusionMatrix(reference = ds_val$PovertyStatus, 
+                          data = predict(poverty_ct_prun, newdata = ds_val, type = "class"),
+                          positive = "Poor")
+
+cm_tr <- confusionMatrix(reference = ds_tr$PovertyStatus, 
+                         data = predict(poverty_ct_prun, newdata = ds_tr, type = "class"),
+                         positive = "Poor")
+
+# Extract metrics
+accuracy_tr  <- cm_tr$overall['Accuracy']
+balanced_accuracy_tr  <- cm_tr$byClass['Balanced Accuracy']
+sensitivity_tr  <- cm_tr$byClass['Sensitivity']
+specificity_tr  <- cm_tr$byClass['Specificity']
+
+accuracy_val  <- cm_val$overall['Accuracy']
+balanced_accuracy_val  <- cm_val$byClass['Balanced Accuracy']
+sensitivity_val  <- cm_val$byClass['Sensitivity']
+specificity_val  <- cm_val$byClass['Specificity']
+
+# Create a data table for displaying
+metrics_table <- data.frame(
+  Training = round(c(accuracy_tr, balanced_accuracy_tr, sensitivity_tr, specificity_tr), 3),
+  Validation = round(c(accuracy_val, balanced_accuracy_val, sensitivity_val, specificity_val), 3)
+)
+
+# Use kable to create a table
+kable(metrics_table, format = "html", digits = 3, caption = "Classification Metrics by Dataset")
+```
+
+The results of our decision tree are promising. Not only does it avoid overfitting and imbalance issues, but it also achieves both high overall and balanced accuracy, both nearing 80%. The similarity between these two metrics allows us to assert that its classification power is decent.
+
+Regarding the interpretation of the model, we can say that the education level of individuals in the United States is the most significant variable in determining whether they will live in poverty. Holding at least a bachelor's degree significantly reduces the likelihood of an individual being poor. The second most important variable is the number of family members, and we observe that households with only one person tend to avoid poverty. As the third most significant variable, marital status shows that being married decreases the likelihood of living in poverty.
+
+Interestingly, race ranks as the fifth most important variable. This indicates that not being white in someway increases the chance of being poor within American society.
+
+### 4.2.3 XGBoost
+
+XG Boost is an optimization of the gradient boosting algorithm. This optimization incorporates regularization to prevent overfitting, enabling faster training.
+
+It was decided that exploring the option of XGBoost was worthwhile due to its fast execution compared to other models. To utilize it, the data was prepared by transforming it into a matrix, and categorical variables were encoded as 1 and 0. Once the data was ready, we proceeded to work on the model, starting with a simple XGBoost. Upon detecting signs of overfitting, we carried out tuning using 5-fold cross-validation and a stopping criterion set at 10.
+
+```{r results='hide'}
+df_tr_mat_xg <- model.matrix(PovertyStatus~ . -1, data=ds_tr_down)
+df_val_mat_xg <- model.matrix(PovertyStatus~ . -1, data=ds_val)
+df_te_mat_xg <- model.matrix(PovertyStatus~ . -1, data=ds_te)
+
+
+dtrain <- xgb.DMatrix(data = df_tr_mat_xg, label = ifelse(ds_tr_down$PovertyStatus=="Poor", 1,0))
+dtest <- xgb.DMatrix(data = df_te_mat_xg, label = ifelse(ds_te$PovertyStatus=="Poor", 1,0))
+dval <- xgb.DMatrix(data = df_val_mat_xg, label = ifelse(ds_val$PovertyStatus=="Poor", 1,0))
+
+
+params <- list(
+  booster="gbtree", # use tree as the booster (i.e., the base learner) 
+  objective = "binary:logistic",  # binary classification
+  eval_metric = "error"         # evaluation metric (here classification error rate)
+)
+
+## Run the boosting for 1000 rounds (boosting iterations)
+boost_model <- xgboost(data = dtrain, params = params, nrounds = 1000)
+
+## Make the predictions and compare apparent and test metrics
+tr_predictions <- predict(boost_model, dtrain)
+val_predictions <- predict(boost_model, dval)
+te_predictions <- predict(boost_model, dtest)
+boost_pred_tr <- factor(ifelse(tr_predictions > 0.5, "Poor", "Not Poor"))
+boost_pred_val <- factor(ifelse(val_predictions > 0.5, "Poor", "Not Poor"))
+boost_pred_te <- factor(ifelse(te_predictions > 0.5, "Poor", "Not Poor"))
+confusionMatrix(data=boost_pred_tr, reference = ds_tr_down$PovertyStatus, positive = "Poor")
+confusionMatrix(data=boost_pred_val, reference = ds_val$PovertyStatus, positive = "Poor")
+confusionMatrix(data=boost_pred_te, reference = ds_te$PovertyStatus, positive = "Poor")
+
+#Tuning
+cv <- xgb.cv(data = dtrain, 
+             nrounds = 1000,
+             nfold = 5, 
+             params=params,
+             early_stopping_rounds = 10)
+
+cv$best_iteration #best ireration is20 
+
+
+boost_model_tuned <- xgboost(data = dtrain, params = params, nrounds = cv$best_iteration)
+tr_predictions_tuned <- predict(boost_model_tuned, dtrain)
+val_predictions_tuned <- predict(boost_model_tuned, dval)
+te_predictions_tuned <- predict(boost_model_tuned, dtest)
+boost_pred_tr_tuned <- factor(ifelse(tr_predictions_tuned > 0.5, "Poor", "Not Poor"))
+boost_pred_val_tuned <- factor(ifelse(val_predictions_tuned > 0.5, "Poor", "Not Poor"))
+boost_pred_te_tuned <- factor(ifelse(te_predictions_tuned > 0.5, "Poor", "Not Poor"))
+confusionMatrix(data=boost_pred_tr_tuned, reference = ds_tr_down$PovertyStatus, positive = "Poor")
+confusionMatrix(data=boost_pred_val_tuned, reference = ds_val$PovertyStatus, positive = "Poor")
+confusionMatrix(data=boost_pred_te_tuned, reference = ds_te$PovertyStatus, positive = "Poor")
+```
+
+```{r}
+# For non-tuned model
+cm_train_nt = confusionMatrix(data = boost_pred_tr, reference = ds_tr_down$PovertyStatus, positive = "Poor")
+cm_val_nt = confusionMatrix(data = boost_pred_val, reference = ds_val$PovertyStatus, positive = "Poor")
+cm_test_nt = confusionMatrix(data = boost_pred_te, reference = ds_te$PovertyStatus, positive = "Poor")
+
+# For tuned model
+cm_train_t = confusionMatrix(data = boost_pred_tr_tuned, reference = ds_tr_down$PovertyStatus, positive = "Poor")
+cm_val_t = confusionMatrix(data = boost_pred_val_tuned, reference = ds_val$PovertyStatus, positive = "Poor")
+cm_test_t = confusionMatrix(data = boost_pred_te_tuned, reference = ds_te$PovertyStatus, positive = "Poor")
+
+get_metrics <- function(cm) {
+    accuracy = cm$overall['Accuracy']
+    balanced_accuracy = (cm$byClass['Sensitivity'] + cm$byClass['Specificity']) / 2
+    specificity = cm$byClass['Specificity']
+    sensitivity = cm$byClass['Sensitivity']
+    return(c(Accuracy = accuracy, Balanced_Accuracy = balanced_accuracy, Specificity = specificity, Sensitivity = sensitivity))
+}
+
+# Extract metrics for non-tuned
+metrics_train_nt = get_metrics(cm_train_nt)
+metrics_val_nt = get_metrics(cm_val_nt)
+metrics_test_nt = get_metrics(cm_test_nt)
+
+# Extract metrics for tuned
+metrics_train_t = get_metrics(cm_train_t)
+metrics_val_t = get_metrics(cm_val_t)
+metrics_test_t = get_metrics(cm_test_t)
+
+metrics_comparison <- data.frame(
+  `Simple XGBoost` = metrics_val_nt,
+  `Tuned XGBoost` = metrics_val_t
+)
+
+# Print the comparison table
+kable(metrics_comparison, format = "html", digits = 3, caption = "Hyperparameter tuning results")
+```
+
+```{r}
+#Final results
+metrics_comparison_xg <- data.frame(
+  `Training` = metrics_train_t,
+  `Validation` = metrics_val_t
+)
+kable(metrics_comparison_xg, format = "html", digits = 3, caption = "Classification Metrics by Dataset")
+```
+
+We concluded that the XG Boost model does not provide significant improvements in terms of prediction accuracy compared to the CART model. Since it lacks interpretability, our goal was to achieve an increase in accuracy. Failing to do so, the use of this model in the final selection becomes less likely.
+
+### 4.2.4 Support Vector Machine
+
+#### a. Linear Support Vector Machine:
+
+First a Linear support vector Machine model was created, and then a prediction was performed with the model using the validation set, in order to evaluate it with the confussion Matrix. Then the model was trained with Cross Validation to confirm that the model is able to generalize new data well, and the validation accuracy is high (≈74%). Next, the model was fine-tuned to maximize its performance, so that it is not over-fitted. To do this, the model was trained with various values of C and thus select the parameter that can improve the model's ability to generalize data. Finally, after the result of the confusion matrix of the tuned model with a new C , the accuracy has almost keep the same, without any significant improvement.
+
+```{r results='hide'}
+# Train a linear SVM model using the training data 'ds_tr_down'
+inclinear_svm <- svm(PovertyStatus ~ ., data=ds_tr_down, kernel="linear")
+# Use the trained model to predict 'PovertyStatus' for the same training dataset.
+inclinear_svm_pred <- predict(inclinear_svm, newdata = ds_tr)
+# Calculate the confusion matrix for the predictions made on the training dataset.
+matrixsvmlin_tr <- confusionMatrix(data=inclinear_svm_pred, reference = ds_tr$PovertyStatus )
+
+# Predict the 'PovertyStatus' using the linear SVM model on the validation dataset 'ds_val'
+inclinear_svm_pred <- predict(inclinear_svm, newdata = ds_val)
+# Calculate the confusion matrix for the predictions made on the validation dataset.The confusion matrix will compare the predicted values with the actual values stored in 'ds_val$PovertyStatus'.
+matrixsvmlin_val <- confusionMatrix(data=inclinear_svm_pred, reference = ds_val$PovertyStatus )
+
+trctrl <- caret::trainControl(method = "cv", number = 10)
+
+grid <- expand.grid(C = c(0.01, 0.1, 1, 10, 100, 1000))
+
+set.seed(143)
+
+inclinear_svmtgrid <- caret::train(PovertyStatus ~ ., data = ds_tr_down, method = "svmLinear",
+                           trControl=trctrl,
+                           tuneGrid = grid)
+
+# Train the SVM model with a linear kernel and a cost of 0.1
+inclineart_svm <- svm(PovertyStatus ~ ., data = ds_tr_down, kernel = "linear", cost = 0.1)
+
+# Make predictions on the validation dataset
+inclineart_svm_pred <- predict(inclineart_svm, newdata = ds_val)
+
+# Calculate and display the confusion matrix using the test dataset
+# Ensure consistency in datasets used for predictions and reference
+matrixsvmlin_val_t <- confusionMatrix(data = inclineart_svm_pred, reference = ds_val$PovertyStatus)
+```
+
+```{r}
+get_metrics <- function(cm) {
+    accuracy = cm$overall['Accuracy']
+    balanced_accuracy = (cm$byClass['Sensitivity'] + cm$byClass['Specificity']) / 2
+    specificity = cm$byClass['Specificity']
+    sensitivity = cm$byClass['Sensitivity']
+    return(c(Accuracy = accuracy, Balanced_Accuracy = balanced_accuracy, Specificity = specificity, Sensitivity = sensitivity))
+}
+# Extract metrics
+metrics_svmlin_val = get_metrics(matrixsvmlin_val)
+metrics_svmlin_val_t = get_metrics(matrixsvmlin_val_t)
+
+metrics_comparison <- data.frame(
+  `Standard SVM Linear` = metrics_svmlin_val,
+  `Tuned SVM Linear` = metrics_svmlin_val_t
+)
+
+# Print the comparison table
+kable(metrics_comparison, format = "html", digits = 3, caption = "Comparison of Standard vs. Tuned SVM Linear Models")
+```
+
+#### b. Kernel Radial (Gaussiano):
+
+To continue, a new Support Vector Machine model was created with a radial kernel, and then a prediction was performed with the model using the validation set. It is observed that both the Accuracy and the Balanced Accuracy of this new model are better than the linear SVM model, although only by a few points. Then, the model was re-trained with the entire training set using optimal hyperparameters for the radial basis kernel.
+
+```{r results='hide'}
+# Train a linear SVM model using the training data 'ds_tr_down'
+incradial_svm <- svm(PovertyStatus ~ ., data = ds_tr_down, kernel = "radial")
+# Use the trained model to predict 'PovertyStatus' for the same training dataset.
+svmrad_pred <- predict(incradial_svm, newdata = ds_tr)
+# Calculate the confusion matrix for the predictions made on the training dataset.
+matrix_svmrad_tr <- confusionMatrix(data=svmrad_pred, reference = ds_tr$PovertyStatus )
+
+
+# Use the trained model to predict 'PovertyStatus' for the same training dataset.
+svmrad_predval <- predict(incradial_svm, newdata = ds_val)
+# Calculate the confusion matrix for the predictions made on the training dataset.
+matrix_svmrad_val <- confusionMatrix(data=svmrad_predval, reference = ds_val$PovertyStatus )
+
+
+grid_radial <- expand.grid(sigma = c(0.01, 0.02, 0.05, 0.1),
+                           C = c(1, 10, 100, 500, 1000))
+set.seed(143)
+incradial_svmtun <- caret::train(PovertyStatus ~ ., data = ds_tr_down, method = "svmRadial",
+                           trControl=trctrl,
+                           tuneGrid = grid_radial)
+
+
+# Train the SVM model with a radial kernel and a cost of 0.1
+incradial_svmt  <- svm(PovertyStatus ~ ., data = ds_tr_down,
+                         kernel = "radial", gamma = incradial_svmtun$bestTune$sigma,
+                         cost = incradial_svmtun$bestTune$C)
+# Make predictions on the validation dataset
+svmrad_predtr_t <- predict(incradial_svmt, newdata = ds_tr)
+# Calculate and display the confusion matrix using the test dataset
+matrixsvmlrad_t_tr <- confusionMatrix(data=svmrad_predtr_t, reference = ds_tr$PovertyStatus)
+
+# Make predictions on the validation dataset
+svmrad_predval_t <- predict(incradial_svmt, newdata = ds_val)
+# Calculate and display the confusion matrix using the test dataset
+matrixsvmlrad_t_val <- confusionMatrix(data=svmrad_predval_t, reference = ds_val$PovertyStatus)
+```
+
+```{r}
+get_metrics <- function(cm) {
+    accuracy = cm$overall['Accuracy']
+    balanced_accuracy = (cm$byClass['Sensitivity'] + cm$byClass['Specificity']) / 2
+    specificity = cm$byClass['Specificity']
+    sensitivity = cm$byClass['Sensitivity']
+    return(c(Accuracy = accuracy, Balanced_Accuracy = balanced_accuracy, Specificity = specificity, Sensitivity = sensitivity))
+}
+# Extract metrics
+metrics_svmradv = get_metrics(matrix_svmrad_val)
+metrics_svmradvt = get_metrics(matrixsvmlrad_t_val)
+metrics_svmradtrt = get_metrics(matrixsvmlrad_t_tr)
+
+metrics_comparison <- data.frame(
+  `Standard SVM Radial` = metrics_svmradv,
+  `Tuned SVM Radial` = metrics_svmradvt
+)
+
+# Print the comparison table
+kable(metrics_comparison, format = "html", digits = 3, caption = "Comparison of Standard vs. Tuned SVM Radial Models")
+
+```
+
+Finally, after the result of the confussion matrix of the tunned model with a new Gamma and C , the accuracy has increased a really little amount , but at least it has increased. As a result, the model Support Vector Machine is not to much interpretable, we can just use the model if after comparing with the other models it has a better accuracy and balanced accuracy.
+
+```{r}
+get_metrics <- function(cm) {
+    accuracy = cm$overall['Accuracy']
+    balanced_accuracy = (cm$byClass['Sensitivity'] + cm$byClass['Specificity']) / 2
+    specificity = cm$byClass['Specificity']
+    sensitivity = cm$byClass['Sensitivity']
+    return(c(Accuracy = accuracy, Balanced_Accuracy = balanced_accuracy, Specificity = specificity, Sensitivity = sensitivity))
+}
+# Extract metrics
+
+metrics_svmradvt = get_metrics(matrixsvmlrad_t_val)
+metrics_svmradtrt = get_metrics(matrixsvmlrad_t_tr)
+
+
+metrics_compa <- data.frame(
+  `Training` = metrics_svmradtrt,
+  `Validation` = metrics_svmradvt
+)
+
+# Print the comparison table
+kable(metrics_compa, format = "html", digits = 3, caption = "Classification Metrics by Dataset")
+
+```
+
+```{r}
+# Make predictions on the testing dataset
+svmrad_predtes_t <- predict(incradial_svmt, newdata = ds_te)
+# Calculate and display the confusion matrix using the test dataset
+matrixsvmlrad_t_tes <- confusionMatrix(data=svmrad_predtes_t, reference = ds_te$PovertyStatus)
+#Getting mterics
+get_metrics <- function(cm) {
+    accuracy = cm$overall['Accuracy']
+    balanced_accuracy = (cm$byClass['Sensitivity'] + cm$byClass['Specificity']) / 2
+    specificity = cm$byClass['Specificity']
+    sensitivity = cm$byClass['Sensitivity']
+    return(c(Accuracy = accuracy, Balanced_Accuracy = balanced_accuracy, Specificity = specificity, Sensitivity = sensitivity))
+}
+# Extract metrics
+
+metrics_svmradtet = get_metrics(matrixsvmlrad_t_tes)
+metrics_svmradtrt = get_metrics(matrixsvmlrad_t_tr)
+
+
+metrics_comp_final <- data.frame(
+  `Training` = metrics_svmradtrt,
+  `Testing` = metrics_svmradtet
+)
+
+# Print the comparison table
+kable(metrics_comp_final, format = "html", digits = 3, caption = "Classification Metrics SVM Radial tunned by Dataset")
+```
+
+## 5. Results
+
+```{r}
+# Create a data frame with Balanced Accuracy for each model in training and testing
+model_comparisons <- data.frame(
+  Model = c("Logistic Regression", "CART (Decision Tree)", "XGBoost", "Kernel Radial SVM"),
+  Training_BA = c(0.745, 0.800, 0.820, 0.800),
+  Testing_BA = c(0.725, 0.770, 0.770, 0.775),
+  Training_Time = c("Fast", "Fast", "Fast", "Slow")
+)
+
+# Create a table using knitr::kable
+kable(model_comparisons, format = "markdown", caption = "Comparison of Balanced Accuracy and Training Time Across Models", align = c('l', 'c', 'c', 'c'))
+
+
+```
+
+When comparing five well-defined predictive models for determining poverty status,Logistic Regression, CART (Decision Tree), XGBoost, Linear SVM, and Kernel Radial (Gaussian SVM), each model presents unique strengths and weaknesses in terms of balanced accuracy and computational efficiency.
+
+The CART model excels with the highest balanced accuracy, nearing 80%, indicating it effectively manages the class imbalance problem and provides reliable predictions across both poor and not poor categories. This model's simplicity also allows for quicker training and prediction times compared to more complex models, making it highly suitable for operational environments where time and resource efficiency are important.
+
+The XGBoost model, while utilizing the robustness of multiple trees and regularization techniques, achieved a balanced accuracy of 82% on the training set but only 77% on the testing set. Despite its robustness and high training accuracy, it required substantially more computational resources and did not show significant improvement in balanced accuracy over the simpler CART model. This suggests that the additional complexity of XGBoost does not translate into proportional gains in this specific scenario.
+
+On the other hand, the SVM models, both linear and with a Gaussian kernel, although they provide reasonable balanced accuracy, fall short of the Decision Tree models. The Gaussian SVM marginally outperforms the linear SVM in terms of accuracy but at the cost of significantly increased computation time, which might not be justifiable in many practical applications.
+
+Logistic Regression, being the simplest among the models, offers the quickest training times but has the lowest balanced accuracy, which might limit its usefulness in scenarios where accurate class prediction is crucial, especially under class imbalance conditions.
+
+## 6. Recommendations and discussion
+
+**6.1. Summary of Findings**
+
+Our comparative analysis of five predictive models ,Logistic Regression, CART (Decision Tree), XGBoost, Linear SVM, and Kernel Radial SVM, revealed that the CART model provided the highest balanced accuracy, nearly 80%. This model also demonstrated a favorable balance between computational demand and predictive accuracy. The models' effectiveness varied, with the Random Forest and SVM models offering competitive but slightly lower performance metrics and requiring greater computational resources.
+
+**6.2. Practical Implications**
+
+-   **Policy Development**: The models have consistently identified education as a critical determinant of poverty status. Policymakers could leverage these insights to design educational programs targeted at vulnerable populations to reduce poverty rates. Additionally, interventions to support larger households and improve marital stability could also be beneficial, as indicated by the models.
+
+-   **Resource Allocation**: By utilizing the predictive power of these models, government and non-profit organizations can better allocate resources, such as social welfare benefits and educational grants, to those most likely to be in poverty.
+
+-   **Tool Deployment**: Integrating the CART model into social service databases can help continuously monitor at-risk populations and dynamically adjust interventions as circumstances change.
+
+**6.3. Model Recommendations**
+
+Based on our findings, we recommend the CART (Decision Tree) model for immediate deployment in poverty prediction tasks due to its high accuracy and efficiency. This model's ability to handle class imbalances and provide interpretable results makes it particularly useful for stakeholders needing clear and actionable insights.
+
+**6.4. Limitations**
+
+-   **Data Limitations**: The models were developed based on available data, which may not capture all nuances of poverty, such as transient poverty or underreported minority groups.
+
+-   **Model Constraints**: SVM model, while robust, require significant computational resources that might not be available in all settings.
+
+-   **Computational Constraints**: The more complex models, particularly the Kernel Radial SVM, demand substantial computational power, which could be a limiting factor in low-resource settings.
+
+**6.5. Future Research Directions**
+
+-   **Incorporating Additional Data**: Future studies could explore the inclusion of more dynamic variables, such as employment trends or economic indicators, to enhance the models' sensitivity to economic shifts.
+
+-   **Advanced Modeling Techniques**: Investigating deep learning approaches or ensemble methods that combine the strengths of multiple models could offer improvements in predictive accuracy.
+
+-   **Cross-Validation Studies**: Extensive cross-validation across different geographic and socio-economic contexts would help validate the models' applicability and robustness universally.
+
+**6.6. Conclusion**
+
+The use of advanced predictive modeling in poverty assessment has significant potential to transform social welfare strategies. By accurately identifying those at greatest risk, resources can be more effectively directed, and interventions can be timely and relevant. The CART model, in particular, stands out as an efficient tool for such initiatives, promising substantial impacts on poverty mitigation efforts.
+
+## 7. References
